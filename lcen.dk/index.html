@@ -1,0 +1,1891 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Learning Centre | Enrichment Beyond Classroom</title>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,700;1,500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --cream: #F5F0E8;
+      --ivory: #FAF7F2;
+      --forest: #8a1919;
+      --sage: #8B0000;
+      --leaf: #FF6B6B;
+      --amber: #E63946;
+      --rust: #A71C1C;
+      --charcoal: #1A1A18;
+      --warm-gray: #6B6760;
+      --light-line: #E0D9CE;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background-color: var(--ivory);
+      color: var(--charcoal);
+      overflow-x: hidden;
+    }
+
+    /* NOISE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1.25rem 3rem;
+      background: rgba(245, 240, 232, 0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--light-line);
+    }
+
+    .nav-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      text-decoration: none;
+    }
+
+    .nav-logo-mark {
+      width: 48px; height: 48px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 4px;
+      background: linear-gradient(180deg, rgba(255,255,255,0.9), rgba(250,248,245,0.9));
+      border: 1px solid rgba(0,0,0,0.06);
+      box-shadow: 0 10px 28px rgba(12,18,20,0.06);
+      transition: transform 180ms ease, box-shadow 180ms ease;
+    }
+
+    .nav-logo-img {
+      width: 40px;
+      height: 40px;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+
+    .nav-logo:hover .nav-logo-mark { transform: translateY(-3px) scale(1.03); box-shadow: 0 16px 38px rgba(12,18,20,0.09); }
+
+    .nav-logo-text {
+      font-family: 'Lora', serif;
+      font-weight: 700;
+      font-size: 1rem;
+      color: var(--charcoal);
+    }
+
+    .nav-logo-sub {
+      font-size: 0.7rem;
+      color: var(--warm-gray);
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      font-size: 0.85rem;
+      color: var(--charcoal);
+      font-weight: 500;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--sage); }
+
+    .nav-links .nav-cta {
+      background: var(--forest);
+      color: var(--cream);
+      padding: 0.55rem 1.3rem;
+      border-radius: 100px;
+      font-weight: 600;
+    }
+
+    .nav-links .nav-cta:hover {
+      background: var(--sage);
+      color: var(--cream);
+    }
+
+    /* Centered title inside the nav bar */
+    .nav-center {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      pointer-events: none;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    .nav-center-title {
+      font-family: 'Lora', serif;
+      font-weight: 800;
+      font-size: 1.25rem;
+      color: var(--forest);
+      letter-spacing: 0.01em;
+      line-height: 1;
+      pointer-events: none;
+      text-transform: none;
+    }
+
+    /* HAMBURGER BUTTON — hidden on desktop */
+    .nav-hamburger {
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      gap: 5px;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 4px;
+      z-index: 110;
+    }
+    .nav-hamburger span {
+      display: block;
+      width: 24px; height: 2px;
+      background: var(--charcoal);
+      border-radius: 2px;
+      transition: transform 0.3s, opacity 0.3s;
+    }
+    .nav-hamburger.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+    .nav-hamburger.open span:nth-child(2) { opacity: 0; }
+    .nav-hamburger.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+    /* MOBILE DRAWER */
+    .nav-drawer {
+      display: none;
+      position: fixed;
+      top: 72px; left: 0; right: 0;
+      background: rgba(245,240,232,0.97);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--light-line);
+      flex-direction: column;
+      padding: 1rem 2rem 1.5rem;
+      gap: 0;
+      z-index: 99;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.08);
+    }
+    .nav-drawer.open { display: flex; }
+    .nav-drawer a {
+      text-decoration: none;
+      font-size: 1rem;
+      color: var(--charcoal);
+      font-weight: 500;
+      padding: 0.9rem 0;
+      border-bottom: 1px solid var(--light-line);
+      transition: color 0.2s;
+    }
+    .nav-drawer a:last-child { border-bottom: none; }
+    .nav-drawer a.nav-cta {
+      margin-top: 0.75rem;
+      background: var(--forest);
+      color: var(--cream) !important;
+      padding: 0.8rem 1.3rem;
+      border-radius: 100px;
+      text-align: center;
+      font-weight: 600;
+      border-bottom: none;
+    }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      padding-top: 72px;
+    }
+
+    .hero-left {
+      background: var(--forest);
+      padding: 5rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-left::before {
+      content: '';
+      position: absolute;
+      top: -100px; right: -100px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(123, 184, 138, 0.15) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-left::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -80px;
+      width: 400px; height: 400px;
+      background: radial-gradient(circle, rgba(232, 169, 53, 0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.12);
+      color: var(--leaf);
+      font-size: 0.75rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0.4rem 0.9rem;
+      border-radius: 100px;
+      width: fit-content;
+      margin-bottom: 2rem;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.2s forwards;
+    }
+
+    .hero-tag::before {
+      content: '';
+      width: 6px; height: 6px;
+      background: var(--amber);
+      border-radius: 50%;
+    }
+
+    .hero-title {
+      font-family: 'Lora', serif;
+      font-size: clamp(3rem, 5vw, 4.5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      color: var(--cream);
+      opacity: 0;
+      animation: fadeUp 0.7s 0.4s forwards;
+    }
+
+    .hero-title em {
+      font-style: italic;
+      color: var(--amber);
+    }
+
+    .hero-subtitle {
+      margin-top: 1.5rem;
+      font-size: 1rem;
+      line-height: 1.7;
+      color: rgba(245, 240, 232, 0.65);
+      max-width: 420px;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.6s forwards;
+    }
+
+    .hero-actions {
+      margin-top: 2.5rem;
+      display: flex;
+      gap: 1rem;
+      align-items: center;
+      opacity: 0;
+      animation: fadeUp 0.7s 0.8s forwards;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      background: var(--amber);
+      color: var(--charcoal);
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.8rem 1.8rem;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(232, 169, 53, 0.35);
+    }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: var(--cream);
+      font-size: 0.9rem;
+      text-decoration: none;
+      font-weight: 500;
+      opacity: 0.75;
+      transition: opacity 0.2s;
+    }
+
+    .btn-secondary:hover { opacity: 1; }
+
+    /* Small CTA style inside camp cards */
+    .camp-cta {
+      display: inline-block;
+      margin-top: 0.9rem;
+      background: var(--sage);
+      color: #fff;
+      padding: 0.45rem 0.9rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.85rem;
+      text-decoration: none;
+      box-shadow: 0 6px 18px rgba(18,18,18,0.06);
+    }
+    .camp-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 26px rgba(18,18,18,0.08); }
+
+    .hero-stat-row {
+      margin-top: 4rem;
+      display: flex;
+      gap: 3rem;
+      opacity: 0;
+      animation: fadeUp 0.7s 1s forwards;
+    }
+
+    .hero-stat strong {
+      display: block;
+      font-family: 'Lora', serif;
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--amber);
+    }
+
+    .hero-stat span {
+      font-size: 0.75rem;
+      color: rgba(245, 240, 232, 0.5);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    /* HERO RIGHT */
+    .hero-right {
+      background: var(--cream);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 5rem 5rem 5rem 4rem;
+      gap: 1.5rem;
+      position: relative;
+    }
+
+    .hero-card {
+      display: block;
+      background: white;
+      border: 1px solid var(--light-line);
+      border-radius: 20px;
+      padding: 1.8rem;
+      position: relative;
+      transition: transform 0.3s, box-shadow 0.3s;
+      opacity: 0;
+      animation: slideIn 0.6s forwards;
+    }
+
+    a.hero-card { text-decoration: none; color: inherit; }
+    a.camp-card { text-decoration: none; color: inherit; display: block; }
+    a.camp-card:focus { outline: none; box-shadow: none; }
+
+    .hero-card.hero-care { text-align: center; }
+    .hero-card.hero-care .card-icon { margin: 0 auto 0.6rem; display: block; }
+    .hero-card.hero-care .card-badge { position: static; display: inline-block; margin: 0 auto 0.6rem; }
+    .hero-card.hero-care h3,
+    .hero-card.hero-care p { text-align: center; }
+
+    .camp-card.hero-care { text-align: center; }
+    .camp-card.hero-care .card-icon { margin: 0 auto 0.6rem; display: block; }
+    .camp-card.hero-care .card-badge { position: static; display: inline-block; margin: 0 auto 0.6rem; }
+    .camp-card.hero-care h3,
+    .camp-card.hero-care p { text-align: center; }
+
+    .gallery-carousel { padding: 2.25rem 5rem; background: var(--ivory); }
+    .gallery-carousel .section-label { margin-bottom: 0.5rem; color: var(--sage); }
+    .carousel {
+      position: relative;
+      overflow: hidden;
+      border-radius: 14px;
+      background: white;
+      border: 1px solid var(--light-line);
+      margin-top: 1.6rem;
+    }
+    .carousel-track {
+      display: flex;
+      transition: transform 320ms ease;
+      will-change: transform;
+    }
+    .carousel-slide {
+      min-width: 100%;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.2rem;
+      min-height: 420px;
+      background: linear-gradient(180deg, rgba(250,250,250,0.8), rgba(245,245,245,0.95));
+    }
+    .carousel-img {
+      width: auto;
+      max-width: 100%;
+      max-height: 100%;
+      object-fit: contain;
+      border-radius: 10px;
+      border: 1px solid var(--light-line);
+      background: #fafafa;
+      display: block;
+    }
+    .carousel-controls { position: absolute; inset: 0; pointer-events: none; }
+    .carousel-btn {
+      pointer-events: auto;
+      position: absolute;
+      top: 50%; transform: translateY(-50%);
+      background: rgba(26,26,24,0.75);
+      color: var(--cream);
+      border: none; width: 40px; height: 40px; border-radius: 999px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer;
+    }
+    .carousel-btn.left { left: 12px; }
+    .carousel-btn.right { right: 12px; }
+    .carousel-dots { display:flex; gap:8px; justify-content:center; margin-top:0.85rem; }
+    .carousel-dot { width:10px; height:10px; background:var(--light-line); border-radius:50%; cursor:pointer; border: none; }
+    .carousel-dot.active { background:var(--sage); }
+
+    .camp-card.hero-camps { text-align: center; }
+    .camp-card.hero-camps .card-icon { margin: 0 auto 0.6rem; display: block; }
+    .camp-card.hero-camps .card-badge { position: static; display: inline-block; margin: 0 auto 0.6rem; }
+    .camp-card.hero-camps h3,
+    .camp-card.hero-camps p { text-align: center; }
+
+    .hero-card.hero-camps { text-align: center; }
+    .hero-card.hero-camps .card-icon { margin: 0 auto 0.6rem; display: block; }
+    .hero-card.hero-camps .card-badge { position: static; display: inline-block; margin: 0 auto 0.6rem; }
+    .hero-card.hero-camps h3,
+    .hero-card.hero-camps p { text-align: center; }
+
+    .hero-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 16px 48px rgba(28, 59, 42, 0.1);
+    }
+
+    .hero-card:nth-child(1) { animation-delay: 0.5s; }
+    .hero-card:nth-child(2) { animation-delay: 0.7s; }
+    .hero-card:nth-child(3) { animation-delay: 0.9s; }
+
+    .card-icon {
+      width: 44px; height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+      margin-bottom: 1rem;
+    }
+
+    .card-icon.green { background: rgba(74, 124, 89, 0.12); }
+    .card-icon.amber { background: rgba(232, 169, 53, 0.15); }
+    .card-icon.rust { background: rgba(196, 92, 42, 0.12); }
+
+    .hero-card h3 {
+      font-family: 'Lora', serif;
+      font-weight: 600;
+      font-size: 1.1rem;
+      color: var(--forest);
+      margin-bottom: 0.4rem;
+    }
+
+    .hero-card p {
+      font-size: 0.82rem;
+      color: var(--warm-gray);
+      line-height: 1.6;
+    }
+
+    .card-badge {
+      position: absolute;
+      top: 1.5rem; right: 1.5rem;
+      background: var(--forest);
+      color: var(--cream);
+      font-size: 0.7rem;
+      font-weight: 600;
+      padding: 0.25rem 0.7rem;
+      border-radius: 100px;
+      letter-spacing: 0.04em;
+    }
+
+    .card-badge.amber-badge {
+      background: var(--amber);
+      color: var(--charcoal);
+    }
+
+    /* ANNOUNCEMENT BANNER */
+    .announcement {
+      background: var(--amber);
+      color: var(--charcoal);
+      text-align: center;
+      padding: 0.85rem 2rem;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+
+    .announcement a {
+      color: var(--charcoal);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* SECTION COMMONS */
+    section { padding: 6rem 5rem; }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--sage);
+      font-weight: 600;
+      margin-bottom: 1.2rem;
+    }
+
+    .section-label::before {
+      content: '';
+      width: 24px; height: 1.5px;
+      background: var(--sage);
+    }
+
+    .section-title {
+      font-family: 'Lora', serif;
+      font-weight: 800;
+      font-size: clamp(2.2rem, 3.5vw, 3rem);
+      line-height: 1.1;
+      color: var(--forest);
+    }
+
+    .section-title em {
+      font-style: italic;
+      color: var(--rust);
+    }
+
+    /* COPENCAMP SECTION */
+    .copencamp {
+      background: var(--forest);
+      color: var(--cream);
+      padding: 6rem 5rem;
+    }
+
+    .copencamp .section-label { color: var(--leaf); }
+    .copencamp .section-label::before { background: var(--leaf); }
+    .copencamp .section-title { color: var(--cream); }
+    .copencamp .section-title em { color: var(--amber); }
+
+    .camps-grid {
+      margin-top: 3.5rem;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .camp-card {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 20px;
+      padding: 2.5rem;
+      transition: background 0.3s;
+    }
+
+    .camp-card:hover { background: rgba(255,255,255,0.1); }
+
+    .camp-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1.5rem;
+    }
+
+    .camp-emoji { font-size: 2.5rem; }
+
+    .camp-age {
+      background: var(--amber);
+      color: var(--charcoal);
+      font-size: 0.95rem;
+      font-weight: 800;
+      padding: 0.45rem 0.95rem;
+      border-radius: 100px;
+      letter-spacing: 0.04em;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 68px;
+      text-align: center;
+      transition: transform 0.12s ease, box-shadow 0.12s ease;
+    }
+
+    .camp-age:hover { transform: translateY(-2px); box-shadow: 0 10px 28px rgba(0,0,0,0.10); }
+
+    .camp-card h3 {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--cream);
+      margin-bottom: 0.6rem;
+    }
+
+    .camp-card p {
+      font-size: 0.88rem;
+      color: rgba(245, 240, 232, 0.65);
+      line-height: 1.7;
+      margin-bottom: 1.5rem;
+    }
+
+    .camp-meta { display: flex; flex-direction: column; gap: 0.5rem; }
+
+    .camp-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      font-size: 0.82rem;
+      color: rgba(245, 240, 232, 0.75);
+    }
+
+    .camp-meta-icon {
+      width: 20px; height: 20px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.65rem;
+    }
+
+    /* WEEKS SCHEDULE */
+    .weeks-section { background: var(--cream); padding: 6rem 5rem; }
+
+    .weeks-grid {
+      margin-top: 3rem;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+      max-width: 1100px;
+      margin: 3rem auto 0;
+    }
+
+    .week-card {
+      background: var(--ivory);
+      border: 1px solid var(--light-line);
+      border-radius: 16px;
+      padding: 1.5rem;
+      transition: transform 0.2s, border-color 0.2s;
+      cursor: pointer;
+    }
+
+    .week-card:hover { transform: translateY(-3px); border-color: var(--sage); }
+
+    /* MODAL STYLES */
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem;
+    }
+
+    .modal.active { display: flex; }
+
+    .modal-content {
+      background: white;
+      border-radius: 24px;
+      padding: 3rem;
+      max-width: 900px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      position: relative;
+      animation: slideUp 0.4s ease-out;
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 1.5rem; right: 1.5rem;
+      width: 32px; height: 32px;
+      background: var(--light-line);
+      border: none;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: var(--forest);
+      transition: background 0.2s;
+    }
+
+    .modal-close:hover { background: var(--sage); color: white; }
+
+    .modal-header { margin-bottom: 2.5rem; text-align: center; }
+
+    .modal-header h2 {
+      font-family: 'Lora', serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--forest);
+      margin-bottom: 0.5rem;
+    }
+
+    .modal-header p { font-size: 0.95rem; color: var(--warm-gray); }
+
+    .modal-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+    }
+
+    .modal-option {
+      background: var(--cream);
+      border: 2px solid var(--light-line);
+      border-radius: 20px;
+      padding: 2rem;
+      transition: all 0.3s;
+    }
+
+    .modal-option:hover { border-color: var(--sage); box-shadow: 0 12px 32px rgba(74, 124, 89, 0.15); }
+    .modal-option-icon { font-size: 2.5rem; margin-bottom: 1rem; }
+
+    .modal-option h3 {
+      font-family: 'Lora', serif;
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--forest);
+      margin-bottom: 0.8rem;
+    }
+
+    .modal-option p { font-size: 0.9rem; color: var(--warm-gray); line-height: 1.6; margin-bottom: 1.5rem; }
+    .modal-option .btn-primary { width: 100%; justify-content: center; }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .week-number {
+      font-family: 'Lora', serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--light-line);
+      line-height: 1;
+      margin-bottom: 0.5rem;
+    }
+
+    .week-date { font-size: 0.78rem; color: var(--warm-gray); margin-bottom: 0.8rem; }
+    .week-theme { font-weight: 600; font-size: 0.9rem; color: var(--forest); line-height: 1.4; }
+    .week-tags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
+
+    .week-tag {
+      background: var(--forest);
+      color: var(--cream);
+      font-size: 0.68rem;
+      font-weight: 600;
+      padding: 0.2rem 0.6rem;
+      border-radius: 100px;
+      letter-spacing: 0.03em;
+    }
+
+    .week-tag.sage { background: var(--sage); }
+    .week-tag.amber { background: var(--amber); color: var(--charcoal); }
+    .week-tag.rust { background: var(--rust); }
+
+    /* INFO SECTION */
+    .info-section { background: var(--cream); padding: 6rem 5rem; }
+
+    .info-grid {
+      margin-top: 3.5rem;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+
+    .info-card {
+      padding: 2rem 1.5rem;
+      background: var(--ivory);
+      border: 1px solid var(--light-line);
+      border-radius: 18px;
+    }
+
+    .info-icon { font-size: 1.8rem; margin-bottom: 1rem; }
+
+    .info-card h4 {
+      font-family: 'Lora', serif;
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--forest);
+      margin-bottom: 0.5rem;
+    }
+
+    .info-card p { font-size: 0.82rem; color: var(--warm-gray); line-height: 1.65; }
+
+    /* FAQ SECTION */
+    .faq-section {
+      padding: 6rem 5rem;
+      display: grid;
+      grid-template-columns: 1fr 1.5fr;
+      gap: 5rem;
+    }
+
+    .faq-list { display: flex; flex-direction: column; gap: 0; }
+    .faq-item { border-bottom: 1px solid var(--light-line); }
+
+    .faq-question {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.2rem 0;
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 0.9rem;
+      color: var(--forest);
+      gap: 1rem;
+    }
+
+    .faq-toggle {
+      width: 24px; height: 24px;
+      background: var(--forest);
+      color: var(--cream);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+
+    .faq-answer {
+      display: none;
+      padding: 0 0 1.2rem 0;
+      font-size: 0.85rem;
+      line-height: 1.7;
+      color: var(--warm-gray);
+    }
+
+    .faq-item.open .faq-answer { display: block; }
+    .faq-item.open .faq-toggle { background: var(--sage); }
+
+    /* CTA SECTION */
+    .cta-section {
+      background: var(--forest);
+      padding: 5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      gap: 1.5rem;
+    }
+
+    .cta-section .section-label { color: var(--leaf); }
+    .cta-section .section-label::before { background: var(--leaf); }
+    .cta-section .section-title { color: var(--cream); }
+    .cta-section .section-title em { color: var(--amber); }
+
+    .cta-desc { font-size: 1rem; color: rgba(245, 240, 232, 0.65); max-width: 480px; line-height: 1.7; }
+    .cta-buttons { display: flex; gap: 1rem; margin-top: 1rem; }
+
+    .btn-outline {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      border: 1px solid rgba(255,255,255,0.25);
+      color: var(--cream);
+      font-size: 0.9rem;
+      font-weight: 500;
+      padding: 0.8rem 1.8rem;
+      border-radius: 100px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-outline:hover { background: rgba(255,255,255,0.1); }
+
+    /* FOOTER */
+    footer {
+      background: var(--charcoal);
+      color: rgba(245, 240, 232, 0.6);
+      padding: 3rem 5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.8rem;
+    }
+
+    .footer-brand { display: flex; flex-direction: column; gap: 0.3rem; }
+
+    .footer-brand strong {
+      font-family: 'Lora', serif;
+      font-size: 1rem;
+      color: var(--cream);
+    }
+
+    .footer-links { display: flex; gap: 2rem; }
+
+    .footer-links a { color: rgba(245, 240, 232, 0.5); text-decoration: none; transition: color 0.2s; }
+    .footer-links a:hover { color: var(--cream); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateX(30px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity 0.6s, transform 0.6s; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    .divider { height: 1px; background: linear-gradient(90deg, transparent, var(--light-line), transparent); margin: 0 5rem; }
+
+    /* REGISTRATION HIGHLIGHT */
+    .reg-banner {
+      background: linear-gradient(135deg, var(--rust), var(--amber));
+      padding: 2.5rem 5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 2rem;
+    }
+
+    .reg-banner-text h3 {
+      font-family: 'Lora', serif;
+      font-size: 1.5rem;
+      color: white;
+      margin-bottom: 0.3rem;
+    }
+
+    .reg-banner-text p { font-size: 0.88rem; color: rgba(255,255,255,0.8); }
+
+    .btn-white {
+      background: white;
+      color: var(--rust);
+      font-weight: 700;
+      font-size: 0.9rem;
+      padding: 0.8rem 2rem;
+      border-radius: 100px;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn-white:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.15); }
+
+    .terms-wrapper { display: flex; justify-content: center; margin-top: 1.618rem; }
+
+    .terms-btn {
+      display: inline-block;
+      padding: 0.64rem 1.12rem;
+      border-radius: 10px;
+      background: var(--sage);
+      color: #fff;
+      text-decoration: none;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: 0 6px 18px rgba(18,18,18,0.08);
+      transition: transform 200ms cubic-bezier(.2,.9,.3,1), box-shadow 200ms;
+      align-self: center;
+    }
+
+    .terms-btn:hover { transform: translateY(-4px); box-shadow: 0 14px 30px rgba(18,18,18,0.12); }
+    .terms-btn:focus { outline: 3px solid rgba(139,0,0,0.14); outline-offset: 4px; }
+
+    /* =============================================
+       RESPONSIVE STYLES — layout only, no content changes
+       ============================================= */
+
+    @media (max-width: 1024px) {
+      nav { padding: 1.25rem 2rem; }
+      .nav-center { display: none; }
+
+      .hero { grid-template-columns: 1fr; min-height: auto; }
+      .hero-left { padding: 4rem 2.5rem 3rem; }
+      .hero-right { padding: 3rem 2.5rem; }
+
+      section { padding: 4rem 2.5rem; }
+      .copencamp { padding: 4rem 2.5rem; }
+      .weeks-section { padding: 4rem 2.5rem; }
+      .info-section { padding: 4rem 2.5rem; }
+      .faq-section { padding: 4rem 2.5rem; grid-template-columns: 1fr; gap: 2.5rem; }
+      .cta-section { padding: 4rem 2.5rem; }
+      .reg-banner { padding: 2rem 2.5rem; }
+      .gallery-carousel { padding: 2rem 2.5rem; }
+      footer { padding: 2.5rem 2.5rem; }
+      .divider { margin: 0 2.5rem; }
+
+      .camps-grid { grid-template-columns: 1fr; }
+      .weeks-grid { grid-template-columns: 1fr 1fr; }
+      .info-grid { grid-template-columns: 1fr 1fr; }
+
+      .modal-content { padding: 2rem; }
+      .modal-options { grid-template-columns: 1fr !important; gap: 1rem; }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.25rem; }
+      .nav-links { display: none; }
+      .nav-center { display: none; }
+      .nav-hamburger { display: flex; }
+
+      .hero { grid-template-columns: 1fr; }
+      .hero-left { padding: 3rem 1.25rem 2.5rem; }
+      .hero-right { padding: 2rem 1.25rem; gap: 1rem; }
+      .hero-actions { flex-wrap: wrap; gap: 0.75rem; }
+      .hero-stat-row { gap: 2rem; margin-top: 2.5rem; }
+
+      section { padding: 3rem 1.25rem; }
+      .copencamp { padding: 3rem 1.25rem; }
+      .weeks-section { padding: 3rem 1.25rem; }
+      .info-section { padding: 3rem 1.25rem; }
+      .faq-section { padding: 3rem 1.25rem; grid-template-columns: 1fr; gap: 2rem; }
+      .cta-section { padding: 3rem 1.25rem; }
+      .reg-banner { padding: 1.5rem 1.25rem; flex-direction: column; text-align: center; }
+      .gallery-carousel { padding: 2rem 1.25rem; }
+      footer { padding: 2rem 1.25rem; flex-direction: column; align-items: flex-start; gap: 1.25rem; }
+      .divider { margin: 0 1.25rem; }
+
+      .camp-card { padding: 1.75rem 1.25rem; }
+      .weeks-grid { grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+      .week-card { padding: 1.1rem; }
+      .info-grid { grid-template-columns: 1fr 1fr; gap: 1rem; }
+      .info-card { padding: 1.5rem 1rem; }
+
+      .modal { padding: 0; align-items: flex-end; }
+      .modal-content { border-radius: 24px 24px 0 0; max-height: 85vh; padding: 2rem 1.25rem; }
+      .modal-header h2 { font-size: 1.5rem; }
+      .modal-options { grid-template-columns: 1fr !important; gap: 1rem; }
+
+      .cta-buttons { flex-direction: column; width: 100%; }
+      .cta-buttons .btn-primary,
+      .cta-buttons .btn-outline { justify-content: center; width: 100%; }
+
+      .footer-links { flex-direction: column; gap: 0.75rem; }
+      .carousel-slide { min-height: 260px; }
+    }
+
+    @media (max-width: 480px) {
+      .weeks-grid { grid-template-columns: 1fr; }
+      .info-grid { grid-template-columns: 1fr; }
+      .hero-stat-row { gap: 1.5rem; }
+      .reg-banner-text h3 { font-size: 1.2rem; }
+      .btn-white { width: 100%; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <div class="nav-logo-mark"><img src="lcen.jpeg" alt="Learning Centre logo" class="nav-logo-img"></div>
+    <div>
+      <div class="nav-logo-text">Learning Centre</div>
+      <div class="nav-logo-sub">Hellerup, Denmark</div>
+    </div>
+  </a>
+  <div class="nav-center" aria-hidden="false">
+    <div class="nav-center-title">CopenCamp 2026</div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#schedule">Schedule</a></li>
+    <li><a href="#faq">FAQ</a></li>
+    <li><a href="#contact" class="nav-cta">Register Now</a></li>
+  </ul>
+  <button class="nav-hamburger" id="hamburger" aria-label="Open menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE NAV DRAWER -->
+<div class="nav-drawer" id="navDrawer">
+  <a href="#schedule" onclick="closeDrawer()">Schedule</a>
+  <a href="#faq" onclick="closeDrawer()">FAQ</a>
+  <a href="#contact" class="nav-cta" onclick="closeDrawer()">Register Now</a>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-left">
+    <div class="hero-tag">Hellerup, Copenhagen</div>
+    <h1 class="hero-title">
+      Enrichment<br/><em>Beyond</em><br/>Classroom
+    </h1>
+    <p class="hero-subtitle">
+      A structured and engaging summer programme designed to support learning, creativity, and confidence in a fun and safe environment.
+    </p>
+    <div class="hero-actions">
+      <a href="#copencamp" class="btn-primary">
+        Explore CopenCamp 2026 →
+      </a>
+      <a href="#schedule" class="btn-secondary">
+        View Camps ↓
+      </a>
+    </div>
+    <div class="hero-stat-row">
+        <div class="hero-stat">
+          <strong>2026</strong>
+          <span>CopenCamp</span>
+        </div>
+        <div class="hero-stat">
+          <strong>6</strong>
+          <span>Theme Weeks</span>
+        </div>
+        <div class="hero-stat">
+          <strong>2+</strong>
+          <span>Years running</span>
+        </div>
+    </div>
+  </div>
+  <div class="hero-right">
+    <a href="#schedule" class="hero-card hero-camps">
+      <div class="card-icon green">🌿</div>
+      <div class="card-badge amber-badge">Ages 7+</div>
+      <h3>CopenCamp Summer CAMPS</h3>
+      <p>Week-long thematic workshops led by qualified teachers. For children aged 7 and above. Running June 29 – Aug 7.</p>
+    </a>
+    <a class="hero-card hero-care" href="#summer-care">
+      <div class="card-icon amber">🌟</div>
+      <div class="card-badge amber-badge">Ages 4–6</div>
+      <h3>CopenCamp Summer CARE</h3>
+      <p>Daily activities, crafts, and educational games tailored to young children. Running June 29 – July 31.</p>
+    </a>
+  </div>
+</section>
+
+<script>
+  (function(){
+    const campLinks = document.querySelectorAll('a.hero-card.hero-camps, a.camp-card.hero-camps');
+    const weeksGrid = document.querySelector('#schedule .weeks-grid');
+    if (!campLinks.length || !weeksGrid) return;
+    campLinks.forEach(link => {
+      link.addEventListener('click', function(ev){
+        ev.preventDefault();
+        weeksGrid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setTimeout(() => { history.replaceState(null, '', '#schedule'); }, 600);
+      });
+    });
+  })();
+</script>
+
+<!-- ANNOUNCEMENT -->
+<div class="announcement">
+  🗓️ Registration opens <strong>27th February 2026</strong>. <a href="#contact">Get notified →</a>
+</div>
+
+<!-- COPENCAMP -->
+<section class="copencamp" id="copencamp">
+  <div class="section-label">Summer 2026</div>
+  <h2 class="section-title reveal">Summer that<br/><em>inspires & grows</em></h2>
+  <div class="camps-grid">
+    <a href="https://www.lcen.dk/camps" class="camp-card reveal hero-camps" target="_blank" rel="noopener noreferrer">
+      <div class="card-icon green">⛺</div>
+      <div class="card-badge amber-badge">Ages 7+</div>
+      <h3>Summer CAMPS</h3>
+      <p>Week-long, independent thematic workshops led by qualified teachers and coaches. Mix and match weeks based on your child's interests — each week stands alone.   
+        <strong>Includes daily schedule.</strong></p>
+      <div class="camp-meta">
+        <div class="camp-meta-item">
+          <div class="camp-meta-icon">📅</div>
+          29 June – 7 August 2026
+        </div>
+        <div class="camp-meta-item">
+          <div class="camp-meta-icon">🕘</div>
+          Monday–Friday · 09:00–16:00
+        </div>
+        <div class="camp-meta-item">
+          <div class="camp-meta-icon">📍</div>
+          International School of Hellerup
+        </div>
+      </div>
+      <div class="camp-cta">Daily schedule →</div>
+    </a>
+    <a href="https://www.lcen.dk/care" class="camp-card reveal hero-care" id="summer-care" target="_blank" rel="noopener noreferrer">
+      <div class="card-icon amber">🌈</div>
+      <div class="card-badge amber-badge">Ages 4–6</div>
+      <h3>Summer CARE</h3>
+      <p>A nurturing, play-based environment featuring daily crafts, educational games, and activities tailored to each child's interests and developmental stage. <br>
+        <strong> Includes daily schedule.</strong></p>
+      <div class="camp-meta">
+        <div class="camp-meta-item">
+          <div class="camp-meta-icon">📅</div>
+          29 June – 31 July 2026
+        </div>
+        <div class="camp-meta-item">
+          <div class="camp-meta-icon">🕘</div>
+          Monday–Friday · 08:30–16:30
+        </div>
+        <div class="camp-meta-item">
+          <div class="camp-meta-icon">📍</div>
+          International School of Hellerup
+        </div>
+      </div>
+      <div class="camp-cta">Daily schedule →</div>
+    </a>
+  </div>
+</section>
+
+<!-- WEEKS SCHEDULE -->
+<section class="weeks-section" id="schedule">
+  <div class="section-label">What's happening</div>
+  <h2 class="section-title reveal">Six weeks of Camps</h2>
+  <div class="weeks-grid">
+    <div class="week-card reveal" data-week="27" onclick="openModal(event)">
+      <div class="week-number">27</div>
+      <div class="week-date">29 Jun – 3 Jul</div>
+      <div class="week-theme">Sports &amp; Coding</div>
+      <div class="week-tags">
+        <span class="week-tag sage">Sports</span>
+        <span class="week-tag">Coding</span>
+      </div>
+    </div>
+    <div class="week-card reveal" data-week="28" onclick="openModal(event)">
+      <div class="week-number">28</div>
+      <div class="week-date">6 Jul – 10 Jul</div>
+      <div class="week-theme">Art &amp; Nature</div>
+      <div class="week-tags">
+        <span class="week-tag rust">Art</span>
+        <span class="week-tag sage">Nature</span>
+      </div>
+    </div>
+    <div class="week-card reveal" data-week="29" onclick="openModal(event)">
+      <div class="week-number">29</div>
+      <div class="week-date">13 Jul – 17 Jul</div>
+      <div class="week-theme">Explorers, Sports &amp; Maths</div>
+      <div class="week-tags">
+        <span class="week-tag">Explorers</span>
+        <span class="week-tag sage">Sports</span>
+        <span class="week-tag amber">Maths</span>
+      </div>
+    </div>
+    <div class="week-card reveal" data-week="30" onclick="openModal(event)">
+      <div class="week-number">30</div>
+      <div class="week-date">20 Jul – 24 Jul</div>
+      <div class="week-theme">Space &amp; Art</div>
+      <div class="week-tags">
+        <span class="week-tag">Space</span>
+        <span class="week-tag rust">Art</span>
+      </div>
+    </div>
+    <div class="week-card reveal" data-week="31" onclick="openModal(event)">
+      <div class="week-number">31</div>
+      <div class="week-date">27 Jul – 31 Jul</div>
+      <div class="week-theme">STEAM, Nature &amp; Maths</div>
+      <div class="week-tags">
+        <span class="week-tag amber">STEAM</span>
+        <span class="week-tag sage">Nature</span>
+        <span class="week-tag">Maths</span>
+      </div>
+    </div>
+    <div class="week-card reveal" data-week="32" onclick="openModal(event)">
+      <div class="week-number">32</div>
+      <div class="week-date">3 Aug – 7 Aug</div>
+      <div class="week-theme">Explorers</div>
+      <div class="week-tags">
+        <span class="week-tag">Explorers</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MODAL FOR WEEK 27 -->
+<div class="modal" id="week27Modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-header">
+      <h2>Week 27: 29 Jun – 3 Jul</h2>
+      <p>Choose your camp</p>
+    </div>
+    <div class="modal-options">
+      <div class="modal-option">
+        <div class="modal-option-icon">⚽</div>
+        <h3>Sports</h3>
+        <p>Outdoor fun in parks and beaches with games, beach yoga, water activities, and workouts—planned together to build teamwork and sportsmanship.</p>
+        <a href="https://www.lcen.dk/events/sports-copencamp-week-27-age-group-7-to-11-years" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+      <div class="modal-option">
+        <div class="modal-option-icon">💻</div>
+        <h3>Coding</h3>
+        <p>Create games, animations, stories, and more with Scratch—no experience needed! Just bring your own device and start creating.</p>
+        <a href="https://www.lcen.dk/events/coding-with-scratch-week-27-age-group-7-to-11-years" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOR WEEK 28 -->
+<div class="modal" id="week28Modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-header">
+      <h2>Week 28: 6 Jul – 10 Jul</h2>
+      <p>Choose your camp</p>
+    </div>
+    <div class="modal-options">
+      <div class="modal-option">
+        <div class="modal-option-icon">🎨</div>
+        <h3>Art</h3>
+        <p>Explore art from caves to contemporary—experiment, get messy, and create across the city while having fun!</p>
+        <a href="https://www.lcen.dk/events/art-copencamp-week-28-age-group-7-to-11-years" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+      <div class="modal-option">
+        <div class="modal-option-icon">🌿</div>
+        <h3>Nature</h3>
+        <p>Summer meets nature—explore forests, parks, and lakes in a fun-filled outdoor week of adventure and discovery.</p>
+        <a href="https://www.lcen.dk/events/copencamp-nature-explorers-week-28-age-group-7-to-11-years" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOR WEEK 29 -->
+<div class="modal" id="week29Modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-header">
+      <h2>Week 29: 13 Jul – 17 Jul</h2>
+      <p>Choose your camp</p>
+    </div>
+    <div class="modal-options" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="modal-option">
+        <div class="modal-option-icon">🧭</div>
+        <h3>Explorers</h3>
+        <p>Explore Copenhagen's parks and beaches with map-reading adventures, outdoor activities, and a new adventure every day—be ready to head out on time!</p>
+        <a href="https://www.lcen.dk/events/copenhagen-explorers-week-29-age-group-7-to-11-years" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+      <div class="modal-option">
+        <div class="modal-option-icon">⚽</div>
+        <h3>Sports</h3>
+        <p>Outdoor fun in parks and beaches with games, beach yoga, water activities, and workouts—planned together to build teamwork and sportsmanship.</p>
+        <a href="https://www.lcen.dk/events/sports-copencamp-week-29-age-group-7-to-11-years" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+      <div class="modal-option">
+        <div class="modal-option-icon">🔢</div>
+        <h3>Maths</h3>
+        <p>Master mathematical concepts through interactive games and real-world problem-solving. Build confidence and unlock the joy of numbers!</p>
+        <a href="https://www.lcen.dk/events/space-copencamp-week-30-age-group-7-to-11" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOR WEEK 30 -->
+<div class="modal" id="week30Modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-header">
+      <h2>Week 30: 20 Jul – 24 Jul</h2>
+      <p>Choose your camp</p>
+    </div>
+    <div class="modal-options">
+      <div class="modal-option">
+        <div class="modal-option-icon">🚀</div>
+        <h3>Space</h3>
+        <p>Blast off into space! Discover the sun, moon, stars, and planets—and get hands-on with fun, edible science along the way.</p>
+        <a href="https://www.lcen.dk/events/art-copencamp-week-30-age-group-7-to-11-years" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+      <div class="modal-option">
+        <div class="modal-option-icon">🎨</div>
+        <h3>Art</h3>
+        <p>Explore art from caves to contemporary—experiment, get messy, and create across the city while having fun!</p>
+        <a href="https://www.lcen.dk/events/steam-copencamp-week-31-age-group-7-to-11" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOR WEEK 31 -->
+<div class="modal" id="week31Modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-header">
+      <h2>Week 31: 27 Jul – 31 Jul</h2>
+      <p>Choose your camp</p>
+    </div>
+    <div class="modal-options" style="grid-template-columns: repeat(3, 1fr);">
+      <div class="modal-option">
+        <div class="modal-option-icon">🔬</div>
+        <h3>STEAM</h3>
+        <p>Dive into STEAM—where Science, Technology, Engineering, Art, and Math come alive through hands-on projects, creativity, and real-world problem-solving. Bring your device and start exploring!</p>
+        <a href="https://www.lcen.dk/events/copencamp-nature-explorers-week-31-age-group-7-to-11-years" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+      <div class="modal-option">
+        <div class="modal-option-icon">🌿</div>
+        <h3>Nature</h3>
+        <p>Summer meets nature—explore forests, parks, and lakes in a fun-filled outdoor week of adventure and discovery.</p>
+        <a href="https://www.lcen.dk/events/copenhagen-explorers-week-32-age-group-7-to-11-years-1" class="btn-primary" target="_blank" rel="noopener noreferrer">Register Now →</a>
+      </div>
+      <div class="modal-option">
+        <div class="modal-option-icon">🔢</div>
+        <h3>Maths</h3>
+        <p>Master mathematical concepts through interactive games and real-world problem-solving. Build confidence and unlock the joy of numbers!</p>
+        <a href="mailto:copencamp@gmail.com" class="btn-primary">Register Now →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL FOR WEEK 32 -->
+<div class="modal" id="week32Modal">
+  <div class="modal-content">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div class="modal-header">
+      <h2>Week 32: 3 Aug – 7 Aug</h2>
+      <p>Final Week of Camp</p>
+    </div>
+    <div class="modal-options" style="grid-template-columns: 1fr;">
+      <div class="modal-option">
+        <div class="modal-option-icon">🧭</div>
+        <h3>Explorers</h3>
+        <p>Explore Copenhagen's parks and beaches with map-reading adventures, outdoor activities, and a new adventure every day—be ready to head out on time!</p>
+        <a href="mailto:copencamp@gmail.com" class="btn-primary">Register Now →</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- REGISTRATION BANNER -->
+<div class="reg-banner">
+  <div class="reg-banner-text">
+    <h3>Registration Opens 27th Feb 2026</h3>
+    <p>Limited spots available — register early to secure a place.</p>
+  </div>
+  <a href="mailto:copencamp@gmail.com" class="btn-white">Register Now →</a>
+</div>
+
+<!-- PRACTICAL INFO -->
+<section class="info-section">
+  <div class="section-label">Good to know</div>
+  <h2 class="section-title reveal">Everything you<br/><em>need to know</em></h2>
+  <div class="info-grid">
+    <div class="info-card reveal">
+      <div class="info-icon">📍</div>
+      <h4>Location</h4>
+      <p>International School of Hellerup<br/>Rygårds Alle 131<br/>2900 Hellerup</p>
+    </div>
+    <div class="info-card reveal">
+      <div class="info-icon">🍱</div>
+      <h4>Food &amp; Clothing</h4>
+      <p>Children bring 2 snacks, a packed lunch, and a water bottle. Dress for outdoor activities and painting.</p>
+    </div>
+    <div class="info-card reveal">
+      <div class="info-icon">💳</div>
+      <h4>Payment</h4>
+      <p>Bank details sent after registration via email. Enrollment is confirmed once payment is received.</p>
+    </div>
+    <div class="info-card reveal">
+      <div class="info-icon">🚌</div>
+      <h4>Pickup</h4>
+      <p>Pickup by 16:00 (CAMPS) or 16:30 (CARE). Solo departure requires prior written permission.</p>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div>
+    <div class="section-label">Questions</div>
+    <h2 class="section-title reveal">Frequently<br/><em>asked</em></h2>
+    <p style="margin-top:1.2rem; font-size:0.9rem; color:var(--warm-gray); line-height:1.7; max-width:320px;">
+      Don't see your question answered? Reach out to our team at <a href="mailto:copencamp@gmail.com" style="color:var(--sage);">copencamp@gmail.com</a>
+    </p>
+  </div>
+  <div class="faq-list">
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What are the dates?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">
+        <p>CopenCamp summer CAMP for 2026 spans a six-week period. Camps are independent so you may enrol for any single week or any combination.</p>
+        <ul>
+          <li><strong>Week 27:</strong> 29 June 2026 – 3 July 2026</li>
+          <li><strong>Week 28:</strong> 6 July 2026 – 10 July 2026</li>
+          <li><strong>Week 29:</strong> 13 July 2026 – 17 July 2026</li>
+          <li><strong>Week 30:</strong> 20 July 2026 – 24 July 2026</li>
+          <li><strong>Week 31:</strong> 27 July 2026 – 31 July 2026</li>
+          <li><strong>Week 32:</strong> 3 August 2026 – 7 August 2026</li>
+        </ul>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What is the age group suitability?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">
+        <p><strong>CopenCamp Summer CAMP:</strong> children aged 7 years and above.</p>
+        <p><strong>CopenCamp Summer CARE:</strong> children aged 4–6 years.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What are the themes for the six weeks?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">
+        <ul>
+          <li><strong>Week 27:</strong> Sports and Coding</li>
+          <li><strong>Week 28:</strong> Art and Nature</li>
+          <li><strong>Week 29:</strong> Explorers, Sports and Maths</li>
+          <li><strong>Week 30:</strong> Space and Art</li>
+          <li><strong>Week 31:</strong> STEAM, Nature and Maths</li>
+          <li><strong>Week 32:</strong> Explorers</li>
+        </ul>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What is the location?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">International School of Hellerup<br/>Rygårds Alle 131<br/>2900 Hellerup</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What about food, clothing, and other equipment?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">
+        <p><strong>Food:</strong> Children must bring two snacks (morning and afternoon) and a nutritious packed lunch plus a water bottle.</p>
+        <p><strong>Clothing:</strong> Dress for the weather and expect painting and outdoor activities — comfortable walking shoes are recommended.</p>
+        <p><strong>Other equipment:</strong> Unless required by facilitators, electronic devices (phones, tablets, games, etc.) should not be brought. Expensive or treasured items should be left at home.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What is the pickup time?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">
+        <p>Pickup from school at <strong>16:00</strong> for CAMPS and <strong>16:30</strong> for CARE.</p>
+        <p>Only children with recorded parent permission may leave by themselves — inform us at <a href="mailto:copencamp@gmail.com" style="color:var(--sage);">copencamp@gmail.com</a> once enrolled.</p>
+        <p>If a child needs to leave early during the day, a parent must notify <a href="mailto:copencamp@gmail.com" style="color:var(--sage);">copencamp@gmail.com</a> in advance.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What is the standard of conduct?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">
+        <p>Children are expected to maintain the highest standard of conduct. Profanity, physical violence, threats, or otherwise dangerous or disruptive behaviour are strictly prohibited. Staff instructions and programme rules must be followed.</p>
+        <p>CopenCamp reserves the right to withdraw any student whose behaviour is considered incompatible with the programme; no refund will be given in such cases. Parents agree to pay for damage caused by their child and to support positive conduct standards.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        How is payment handled?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">
+        <p>After registration you will receive an email with account details. Please ensure the email you provide is correct.</p>
+        <p>Enrollment is confirmed only when payment is received into the Learning Centre bank account. After payment, please email payment details to <a href="mailto:copencamp@gmail.com" style="color:var(--sage);">copencamp@gmail.com</a>.</p>
+      </div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What is the mode of communication?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">All CopenCamp activities and instruction are conducted in English. A basic level of English is a prerequisite for participation.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        When are the daily start and end times?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">CopenCamp Summer CAMP runs from <strong>09:00 – 16:00</strong> Monday–Friday. CopenCamp Summer CARE runs from <strong>08:30 – 16:30</strong> Monday–Friday.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        What are the refund rules?
+        <div class="faq-toggle">+</div>
+      </div>
+      <div class="faq-answer">If you cancel after payment, no refund will be given. If a session is cancelled by us due to undersubscription, you will receive a full refund.</div>
+    </div>
+  </div>
+</section>
+
+<!-- IMAGE CAROUSEL -->
+<section class="gallery-carousel" id="gallery-carousel">
+  <div class="section-label">Gallery</div>
+  <h2 class="section-title">Memories from <em>past camps</em></h2>
+  <div class="carousel" aria-roledescription="carousel">
+    <div class="carousel-track" id="carouselTrack">
+      <div class="carousel-slide"><img class="carousel-img" data-index="0" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="1" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="2" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="3" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="4" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="5" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="6" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="7" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="8" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="9" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="10" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="11" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="12" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="13" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="14" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="15" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="16" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="17" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="18" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+      <div class="carousel-slide"><img class="carousel-img" data-index="19" data-src="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Carousel placeholder"/></div>
+    </div>
+    <div class="carousel-controls">
+      <button class="carousel-btn left" id="carouselPrev" aria-label="Previous">‹</button>
+      <button class="carousel-btn right" id="carouselNext" aria-label="Next">›</button>
+    </div>
+  </div>
+  <div class="carousel-dots" id="carouselDots" aria-hidden="false"></div>
+</section>
+
+<script>
+  (function(){
+    const track = document.getElementById('carouselTrack');
+    if (!track) return;
+    const slides = Array.from(track.querySelectorAll('.carousel-slide'));
+    const imgs = Array.from(track.querySelectorAll('.carousel-img'));
+    const prev = document.getElementById('carouselPrev');
+    const next = document.getElementById('carouselNext');
+    const dotsWrap = document.getElementById('carouselDots');
+    let index = 0;
+
+    function goTo(i){
+      index = (i + slides.length) % slides.length;
+      track.style.transform = `translateX(${ -index * 100 }%)`;
+      updateDots();
+    }
+
+    function updateDots(){
+      const dots = dotsWrap.querySelectorAll('.carousel-dot');
+      dots.forEach((d, idx) => d.classList.toggle('active', idx === index));
+    }
+
+    function createDots(){
+      dotsWrap.innerHTML = '';
+      slides.forEach((_, i) =>{
+        const d = document.createElement('button');
+        d.className = 'carousel-dot';
+        d.type = 'button';
+        d.addEventListener('click', ()=> goTo(i));
+        dotsWrap.appendChild(d);
+      });
+      updateDots();
+    }
+
+    prev.addEventListener('click', () => goTo(index - 1));
+    next.addEventListener('click', () => goTo(index + 1));
+
+    document.addEventListener('keydown', (e)=>{
+      if (e.key === 'ArrowLeft') goTo(index - 1);
+      if (e.key === 'ArrowRight') goTo(index + 1);
+    });
+
+    // Touch swipe support
+    let touchStartX = 0;
+    track.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; }, { passive: true });
+    track.addEventListener('touchend', e => {
+      const diff = touchStartX - e.changedTouches[0].clientX;
+      if (Math.abs(diff) > 40) goTo(diff > 0 ? index + 1 : index - 1);
+    }, { passive: true });
+
+    window.setCarouselImages = function(imageUrls){
+      for(let i=0;i<imgs.length;i++){
+        if (imageUrls[i]){ imgs[i].dataset.src = imageUrls[i]; imgs[i].src = imageUrls[i]; }
+      }
+    };
+
+    window.addImageToCarousel = function(url){
+      const empty = imgs.find(img => !img.dataset.src);
+      if (!empty) return false;
+      empty.dataset.src = url; empty.src = url;
+      return true;
+    };
+
+    createDots();
+    goTo(0);
+    setInterval(() => goTo(index + 1), 5000);
+    try {
+      if (window.setCarouselImages) {
+        window.setCarouselImages([
+          'img1.jpg',
+          'img2.jpg',
+          'img3.jpg',
+          'img4.jpg',
+          'img5.jpg',
+          'img6.jpg',
+          'img7.jpg'
+        ]);
+      }
+    } catch (e) { console.warn('Carousel image load failed', e); }
+    for (let i = imgs.length - 1; i >= 0; i--) {
+      if (!imgs[i].dataset.src) {
+        const slide = slides[i];
+        if (slide && slide.parentElement) slide.parentElement.removeChild(slide);
+        slides.splice(i, 1);
+        imgs.splice(i, 1);
+      }
+    }
+    if (slides.length === 0) {
+      const wrapper = document.getElementById('carouselTrack');
+      const placeholder = document.createElement('div');
+      placeholder.className = 'carousel-slide';
+      placeholder.innerHTML = '<img class="carousel-img" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==" alt="Placeholder"/>';
+      wrapper.appendChild(placeholder);
+      slides.push(placeholder);
+      imgs.push(placeholder.querySelector('.carousel-img'));
+    }
+    createDots();
+    goTo(0);
+  })();
+</script>
+
+<!-- CTA -->
+<section class="cta-section" id="contact">
+  <div class="section-label">Get Started</div>
+  <h2 class="section-title">Ready to <em>enrich</em><br/>your child's summer?</h2>
+  <p class="cta-desc">Join families from across the world at CopenCamp 2026 — a summer of discovery, creativity, and growth.</p>
+  <div class="cta-buttons">
+    <a href="mailto:copencamp@gmail.com" class="btn-primary">Contact CopenCamp →</a>
+    <a href="https://www.lcen.dk/registration" class="btn-outline">Registration Info</a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-brand">
+    <strong>Learning Centre</strong>
+    <span>Rebekkavej 33 KL TH · 2900 Hellerup · CVR 40719660</span>
+    <span>© 2015–2026 Learning Centre</span>
+  </div>
+  <div class="footer-links">
+    <a href="https://www.lcen.dk/terms-and-conditions">Terms &amp; Conditions</a>
+    <a href="mailto:copencamp@gmail.com">copencamp@gmail.com</a>
+  </div>
+</footer>
+
+<script>
+  // Hamburger menu
+  const hamburger = document.getElementById('hamburger');
+  const navDrawer = document.getElementById('navDrawer');
+  hamburger.addEventListener('click', () => {
+    hamburger.classList.toggle('open');
+    navDrawer.classList.toggle('open');
+  });
+  function closeDrawer() {
+    hamburger.classList.remove('open');
+    navDrawer.classList.remove('open');
+  }
+  document.addEventListener('click', (e) => {
+    if (!hamburger.contains(e.target) && !navDrawer.contains(e.target)) closeDrawer();
+  });
+
+  // Scroll reveal
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        const children = e.target.querySelectorAll('.reveal');
+        children.forEach((child, i) => {
+          child.style.transitionDelay = `${i * 0.1}s`;
+          child.classList.add('visible');
+        });
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+  // FAQ toggle
+  function toggleFaq(el) {
+    const item = el.parentElement;
+    const toggle = el.querySelector('.faq-toggle');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => {
+      i.classList.remove('open');
+      i.querySelector('.faq-toggle').textContent = '+';
+    });
+    if (!isOpen) {
+      item.classList.add('open');
+      toggle.textContent = '−';
+    }
+  }
+
+  // Smooth nav active state
+  const sections = document.querySelectorAll('section[id], div[id]');
+  window.addEventListener('scroll', () => {
+    const scrollY = window.scrollY;
+    sections.forEach(section => {
+      const top = section.offsetTop - 120;
+      const bottom = top + section.offsetHeight;
+      const id = section.getAttribute('id');
+      const link = document.querySelector(`.nav-links a[href="#${id}"]`);
+      if (link) {
+        if (scrollY >= top && scrollY < bottom) {
+          link.style.color = 'var(--sage)';
+        } else {
+          link.style.color = '';
+        }
+      }
+    });
+  });
+
+  // Modal functions
+  function openModal(event) {
+    const card = event.currentTarget;
+    const weekNumber = card.getAttribute('data-week');
+    const modal = document.getElementById(`week${weekNumber}Modal`);
+    if (modal) {
+      modal.classList.add('active');
+      document.body.style.overflow = 'hidden';
+    }
+  }
+
+  function closeModal() {
+    document.querySelectorAll('.modal.active').forEach(modal => {
+      modal.classList.remove('active');
+    });
+    document.body.style.overflow = '';
+  }
+
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', function(e) {
+      if (e.target === this) closeModal();
+    });
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closeModal();
+  });
+</script>
+
+</body>
+</html>
