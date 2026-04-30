@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>ReadOneMore — Secondhand Books</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Bebas+Neue&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red:        #c8102e;
+      --red-dark:   #8f0a1f;
+      --red-light:  #e8304a;
+      --red-pale:   #fdf0f2;
+      --white:      #ffffff;
+      --off-white:  #fafaf8;
+      --cream:      #f5f2ee;
+      --blue:       #1a3a5c;
+      --ink:        #1a1a1a;
+      --mid:        #555;
+      --light:      #888;
+      --rule:       #e8ddd8;
+      --shadow:     rgba(200,16,46,0.10);
+      --nav-h:      62px;
+    }
+    *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { background:var(--off-white); color:var(--ink); font-family:'Crimson Pro',serif; font-size:18px; line-height:1.7; overflow-x:hidden; }
+    body::after { content:''; position:fixed; inset:0; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E"); pointer-events:none; z-index:9999; }
+
+    /* ── NAV ── */
+    nav { background:var(--red); position:sticky; top:0; z-index:200; display:flex; align-items:center; justify-content:space-between; padding:0 2.5rem; height:var(--nav-h); box-shadow:0 2px 16px rgba(0,0,0,0.2); }
+    .logo { display:flex; align-items:baseline; gap:0; text-decoration:none; }
+    .logo span { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; color:#fff; letter-spacing:0.04em; }
+    .logo .dim { opacity:0.45; }
+    .logo .dot { width:6px; height:6px; background:#fff; border-radius:50%; margin:0 0.1em 0.15em; display:inline-block; }
+    .nav-links { display:flex; gap:2rem; list-style:none; }
+    .nav-links a { color:rgba(255,255,255,0.78); text-decoration:none; font-family:'Crimson Pro',serif; font-size:0.88rem; letter-spacing:0.1em; text-transform:uppercase; transition:color .2s; cursor:pointer; }
+    .nav-links a:hover, .nav-links a.active { color:#fff; }
+    .nav-right { display:flex; align-items:center; gap:1.2rem; }
+    .cart-btn { background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:#fff; padding:0.4rem 1.1rem; border-radius:2px; cursor:pointer; font-family:'Crimson Pro',serif; font-size:0.9rem; letter-spacing:0.06em; transition:background .2s; display:flex; align-items:center; gap:0.5rem; }
+    .cart-btn:hover { background:rgba(255,255,255,0.25); }
+    .cart-count { background:#fff; color:var(--red); border-radius:50%; width:20px; height:20px; display:flex; align-items:center; justify-content:center; font-size:0.72rem; font-weight:700; font-family:'DM Mono',monospace; }
+
+    /* ── PAGES ── */
+    .page { display:none; min-height:calc(100vh - var(--nav-h)); }
+    .page.active { display:block; animation:fadeIn .3s ease; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:none} }
+
+    /* ── HERO ── */
+    .hero { background:var(--white); border-bottom:3px solid var(--red); display:grid; grid-template-columns:1fr 1fr; min-height:400px; overflow:hidden; }
+    .hero-left { padding:4rem 3.5rem; display:flex; flex-direction:column; justify-content:center; }
+    .eyebrow { font-size:0.78rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--red); font-weight:600; margin-bottom:0.8rem; }
+    .hero h1 { font-family:'Playfair Display',serif; font-size:clamp(2.2rem,4vw,3.5rem); font-weight:900; line-height:1.08; }
+    .hero h1 em { font-style:italic; color:var(--red); }
+    .hero-sub { font-size:1rem; color:var(--mid); margin-top:1rem; max-width:380px; font-style:italic; }
+    .hero-ctas { display:flex; gap:0.8rem; margin-top:1.8rem; flex-wrap:wrap; }
+    .hero-right { background:var(--red); display:flex; align-items:center; justify-content:center; padding:2rem; position:relative; overflow:hidden; }
+    .hero-right::before { content:''; position:absolute; width:320px; height:320px; border-radius:50%; border:55px solid rgba(255,255,255,0.07); top:-70px; right:-70px; }
+    .hero-stack { display:flex; gap:0.8rem; align-items:flex-end; }
+    .book-thumb { width:85px; height:125px; border-radius:2px 6px 6px 2px; box-shadow:4px 4px 16px rgba(0,0,0,0.35); background:var(--cream); display:flex; align-items:center; justify-content:center; overflow:hidden; }
+    .book-thumb img { width:100%; height:100%; object-fit:cover; }
+    .book-thumb.tall { height:155px; }
+    .book-thumb.short { height:100px; }
+
+    /* ── BUTTONS ── */
+    .btn { display:inline-block; padding:0.6rem 1.5rem; border:none; cursor:pointer; font-family:'Crimson Pro',serif; font-size:0.95rem; letter-spacing:0.06em; text-transform:uppercase; text-decoration:none; transition:all .2s; border-radius:2px; }
+    .btn-primary { background:var(--red); color:#fff; }
+    .btn-primary:hover { background:var(--red-dark); }
+    .btn-outline { background:transparent; color:var(--ink); border:1.5px solid var(--ink); }
+    .btn-outline:hover { background:var(--ink); color:#fff; }
+    .btn-sm { padding:0.35rem 0.9rem; font-size:0.82rem; }
+    .btn-ghost { background:transparent; color:var(--red); border:1.5px solid var(--red); }
+    .btn-ghost:hover { background:var(--red); color:#fff; }
+    .btn-white { background:#fff; color:var(--red); }
+    .btn-white:hover { background:var(--cream); }
+
+    /* ── SHOP LAYOUT ── */
+    .shop-wrap { max-width:1280px; margin:0 auto; padding:2.5rem 2rem; }
+    .shop-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:2rem; flex-wrap:wrap; gap:1rem; }
+    .shop-header h2 { font-family:'Playfair Display',serif; font-size:1.8rem; }
+    .filters { display:flex; gap:0.8rem; flex-wrap:wrap; }
+    .filter-pill { background:var(--cream); border:1.5px solid var(--rule); color:var(--ink); padding:0.3rem 1rem; border-radius:20px; cursor:pointer; font-size:0.85rem; font-family:'Crimson Pro',serif; letter-spacing:0.04em; transition:all .2s; }
+    .filter-pill:hover, .filter-pill.active { background:var(--red); color:#fff; border-color:var(--red); }
+    .search-row { display:flex; gap:0.8rem; margin-bottom:2rem; }
+    .search-input { flex:1; padding:0.7rem 1.2rem; border:1.5px solid var(--rule); border-radius:2px; font-family:'Crimson Pro',serif; font-size:1rem; background:var(--white); color:var(--ink); outline:none; }
+    .search-input:focus { border-color:var(--red); }
+    .sort-select { padding:0.7rem 1rem; border:1.5px solid var(--rule); border-radius:2px; font-family:'Crimson Pro',serif; font-size:0.9rem; background:var(--white); color:var(--ink); cursor:pointer; outline:none; }
+
+    /* ── BOOK GRID ── */
+    .book-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1.8rem; }
+    .book-card { background:var(--white); border:1px solid var(--rule); border-radius:4px; overflow:hidden; transition:transform .25s, box-shadow .25s; cursor:pointer; }
+    .book-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px var(--shadow); }
+    .book-cover { width:100%; height:230px; object-fit:cover; background:var(--cream); display:flex; align-items:center; justify-content:center; font-size:3rem; }
+    .book-cover img { width:100%; height:100%; object-fit:cover; }
+    .book-info { padding:0.9rem; }
+    .book-title { font-family:'Playfair Display',serif; font-size:0.95rem; font-weight:700; line-height:1.3; margin-bottom:0.2rem; }
+    .book-author { font-size:0.82rem; color:var(--mid); margin-bottom:0.5rem; }
+    .book-meta { display:flex; align-items:center; justify-content:space-between; }
+    .book-price { font-family:'DM Mono',monospace; font-size:1rem; color:var(--red); font-weight:500; }
+    .condition-badge { font-size:0.68rem; padding:0.15rem 0.5rem; border-radius:20px; letter-spacing:0.06em; text-transform:uppercase; font-family:'DM Mono',monospace; }
+    .cond-like_new { background:#e8f5e9; color:#2e7d32; }
+    .cond-good     { background:#e3f2fd; color:#1565c0; }
+    .cond-fair     { background:#fff8e1; color:#e65100; }
+    .cond-worn     { background:#fce4ec; color:#880e4f; }
+    .mood-tags { display:flex; gap:0.3rem; flex-wrap:wrap; margin-top:0.5rem; }
+    .mood-tag { font-size:0.68rem; background:var(--cream); color:var(--mid); padding:0.1rem 0.45rem; border-radius:20px; font-family:'DM Mono',monospace; }
+
+    /* ── BOOK DETAIL MODAL ── */
+    .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,0.55); z-index:500; display:flex; align-items:center; justify-content:center; padding:1.5rem; animation:fadeIn .2s ease; }
+    .modal { background:var(--white); max-width:780px; width:100%; max-height:88vh; overflow-y:auto; border-radius:4px; display:grid; grid-template-columns:280px 1fr; }
+    .modal-cover { background:var(--cream); display:flex; align-items:center; justify-content:center; font-size:5rem; min-height:380px; }
+    .modal-cover img { width:100%; height:100%; object-fit:cover; }
+    .modal-body { padding:2.2rem; }
+    .modal-body h2 { font-family:'Playfair Display',serif; font-size:1.7rem; font-weight:900; line-height:1.1; margin-bottom:0.3rem; }
+    .modal-author { font-size:1rem; color:var(--mid); margin-bottom:1.2rem; font-style:italic; }
+    .modal-price { font-family:'DM Mono',monospace; font-size:1.6rem; color:var(--red); margin-bottom:1rem; }
+    .modal-desc { font-size:0.98rem; color:var(--mid); margin-bottom:1.2rem; line-height:1.65; }
+    .modal-provenance { background:var(--cream); border-left:3px solid var(--red); padding:0.8rem 1rem; margin-bottom:1.2rem; font-style:italic; font-size:0.93rem; color:var(--mid); }
+    .modal-meta-row { display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1.2rem; }
+    .modal-meta-item { font-size:0.82rem; font-family:'DM Mono',monospace; }
+    .modal-meta-item span { color:var(--light); display:block; font-size:0.72rem; margin-bottom:0.1rem; }
+    .modal-actions { display:flex; gap:0.8rem; flex-wrap:wrap; }
+    .modal-close { position:absolute; top:1rem; right:1.2rem; background:none; border:none; font-size:1.5rem; cursor:pointer; color:var(--mid); z-index:10; }
+
+    /* ── CART ── */
+    .cart-wrap { max-width:900px; margin:0 auto; padding:2.5rem 2rem; }
+    .cart-wrap h2 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:2rem; }
+    .cart-item { display:grid; grid-template-columns:70px 1fr auto auto; align-items:center; gap:1.2rem; padding:1.2rem 0; border-bottom:1px solid var(--rule); }
+    .cart-item-cover { width:70px; height:95px; object-fit:cover; background:var(--cream); border-radius:2px; display:flex; align-items:center; justify-content:center; font-size:1.8rem; overflow:hidden; }
+    .cart-item-cover img { width:100%; height:100%; object-fit:cover; }
+    .cart-item-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; }
+    .cart-item-author { font-size:0.85rem; color:var(--mid); }
+    .qty-control { display:flex; align-items:center; gap:0.5rem; }
+    .qty-btn { background:var(--cream); border:1px solid var(--rule); width:28px; height:28px; border-radius:2px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+    .qty-btn:hover { background:var(--red); color:#fff; border-color:var(--red); }
+    .qty-val { font-family:'DM Mono',monospace; font-size:0.95rem; min-width:24px; text-align:center; }
+    .cart-item-price { font-family:'DM Mono',monospace; font-size:1rem; color:var(--red); min-width:80px; text-align:right; }
+    .cart-summary { margin-top:2rem; background:var(--white); border:1px solid var(--rule); padding:1.5rem; border-radius:4px; }
+    .summary-row { display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.95rem; border-bottom:1px solid var(--rule); }
+    .summary-row:last-child { border:none; }
+    .summary-total { font-family:'DM Mono',monospace; font-size:1.15rem; font-weight:500; }
+    .free-shipping-note { font-size:0.82rem; color:#2e7d32; font-style:italic; margin-top:0.3rem; }
+    .shipping-note { font-size:0.82rem; color:var(--mid); font-style:italic; margin-top:0.3rem; }
+
+    /* ── CHECKOUT ── */
+    .checkout-wrap { max-width:700px; margin:0 auto; padding:2.5rem 2rem; }
+    .checkout-wrap h2 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:2rem; }
+    .form-section { margin-bottom:2rem; }
+    .form-section h3 { font-family:'Playfair Display',serif; font-size:1.2rem; margin-bottom:1rem; padding-bottom:0.4rem; border-bottom:1px solid var(--rule); }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:1rem; margin-bottom:1rem; }
+    .form-group { margin-bottom:1rem; }
+    label { display:block; font-size:0.82rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--mid); margin-bottom:0.35rem; font-family:'DM Mono',monospace; }
+    input[type=text], input[type=email], input[type=password], textarea, select {
+      width:100%; padding:0.65rem 1rem; border:1.5px solid var(--rule); border-radius:2px;
+      font-family:'Crimson Pro',serif; font-size:1rem; background:var(--white); color:var(--ink);
+      outline:none; transition:border .2s;
+    }
+    input:focus, textarea:focus, select:focus { border-color:var(--red); }
+    .delivery-toggle { display:flex; gap:0; border:1.5px solid var(--rule); border-radius:2px; overflow:hidden; margin-bottom:1rem; }
+    .delivery-opt { flex:1; padding:0.7rem; text-align:center; cursor:pointer; font-size:0.9rem; transition:all .2s; border:none; background:transparent; font-family:'Crimson Pro',serif; }
+    .delivery-opt.active { background:var(--red); color:#fff; }
+    .mobilepay-btn { width:100%; background:#5a78ff; color:#fff; border:none; border-radius:6px; padding:1rem; font-size:1.1rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.7rem; font-family:'Crimson Pro',serif; letter-spacing:0.04em; transition:background .2s; }
+    .mobilepay-btn:hover { background:#4060ee; }
+    .mobilepay-logo { font-family:'DM Mono',monospace; font-size:1.2rem; font-weight:700; }
+
+    /* ── BADGES ── */
+    .badges-wrap { max-width:900px; margin:0 auto; padding:2.5rem 2rem; }
+    .badges-wrap h2 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.5rem; }
+    .badges-sub { color:var(--mid); font-style:italic; margin-bottom:2rem; }
+    .badges-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1.2rem; }
+    .badge-card { background:var(--white); border:1px solid var(--rule); border-radius:4px; padding:1.5rem; text-align:center; transition:transform .2s, box-shadow .2s; }
+    .badge-card.earned { border-color:var(--red); box-shadow:0 2px 14px var(--shadow); }
+    .badge-card:hover { transform:translateY(-2px); }
+    .badge-icon { font-size:2.8rem; margin-bottom:0.6rem; }
+    .badge-name { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; margin-bottom:0.3rem; }
+    .badge-desc { font-size:0.82rem; color:var(--mid); margin-bottom:0.5rem; }
+    .badge-earned-label { font-size:0.72rem; font-family:'DM Mono',monospace; color:#2e7d32; background:#e8f5e9; padding:0.2rem 0.6rem; border-radius:20px; }
+    .badge-locked { font-size:0.72rem; font-family:'DM Mono',monospace; color:var(--light); }
+
+    /* ── ADMIN ── */
+    .admin-wrap { max-width:1200px; margin:0 auto; padding:2.5rem 2rem; }
+    .admin-wrap h2 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:2rem; }
+    .admin-tabs { display:flex; gap:0; border-bottom:2px solid var(--rule); margin-bottom:2rem; }
+    .admin-tab { padding:0.6rem 1.5rem; cursor:pointer; border:none; background:transparent; font-family:'Crimson Pro',serif; font-size:1rem; letter-spacing:0.06em; color:var(--mid); border-bottom:2px solid transparent; margin-bottom:-2px; transition:all .2s; }
+    .admin-tab.active { color:var(--red); border-bottom-color:var(--red); }
+    .admin-panel { display:none; }
+    .admin-panel.active { display:block; }
+    .stats-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:1.2rem; margin-bottom:2rem; }
+    .stat-card { background:var(--white); border:1px solid var(--rule); padding:1.5rem; border-radius:4px; }
+    .stat-val { font-family:'DM Mono',monospace; font-size:1.8rem; color:var(--red); font-weight:500; }
+    .stat-label { font-size:0.82rem; color:var(--mid); letter-spacing:0.08em; text-transform:uppercase; margin-top:0.3rem; }
+    .admin-table { width:100%; border-collapse:collapse; font-size:0.9rem; }
+    .admin-table th { text-align:left; padding:0.7rem 1rem; font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; font-family:'DM Mono',monospace; color:var(--mid); border-bottom:2px solid var(--rule); background:var(--cream); }
+    .admin-table td { padding:0.75rem 1rem; border-bottom:1px solid var(--rule); vertical-align:middle; }
+    .admin-table tr:hover td { background:var(--red-pale); }
+    .book-form { background:var(--white); border:1px solid var(--rule); padding:2rem; border-radius:4px; margin-bottom:2rem; }
+    .book-form h3 { font-family:'Playfair Display',serif; font-size:1.3rem; margin-bottom:1.5rem; }
+    .form-3col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; }
+
+    /* ── AUTH ── */
+    .auth-wrap { max-width:440px; margin:4rem auto; padding:2.5rem; background:var(--white); border:1px solid var(--rule); border-radius:4px; }
+    .auth-wrap h2 { font-family:'Playfair Display',serif; font-size:1.8rem; margin-bottom:0.3rem; }
+    .auth-sub { color:var(--mid); font-style:italic; margin-bottom:1.5rem; font-size:0.95rem; }
+    .auth-toggle { text-align:center; margin-top:1.2rem; font-size:0.9rem; color:var(--mid); }
+    .auth-toggle a { color:var(--red); cursor:pointer; }
+
+    /* ── TOAST ── */
+    .toast { position:fixed; bottom:2rem; right:2rem; background:var(--ink); color:#fff; padding:0.9rem 1.5rem; border-radius:4px; font-size:0.92rem; z-index:9000; animation:slideUp .3s ease; display:none; max-width:320px; }
+    .toast.show { display:block; }
+    .toast.success { background:#2e7d32; }
+    .toast.error   { background:var(--red-dark); }
+    @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:none;opacity:1} }
+
+    /* ── EMPTY STATES ── */
+    .empty { text-align:center; padding:4rem 2rem; }
+    .empty-icon { font-size:4rem; margin-bottom:1rem; }
+    .empty h3 { font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:0.5rem; }
+    .empty p { color:var(--mid); font-style:italic; margin-bottom:1.5rem; }
+
+    /* ── FOOTER ── */
+    footer { background:var(--ink); color:rgba(255,255,255,0.6); text-align:center; padding:2rem; font-size:0.85rem; margin-top:4rem; }
+    footer strong { color:#fff; font-family:'Bebas Neue',sans-serif; font-size:1.1rem; letter-spacing:0.06em; }
+
+    @media(max-width:700px) {
+      .hero { grid-template-columns:1fr; }
+      .hero-right { display:none; }
+      .modal { grid-template-columns:1fr; }
+      .modal-cover { min-height:220px; }
+      .stats-grid { grid-template-columns:1fr 1fr; }
+      .form-3col, .form-row { grid-template-columns:1fr; }
+      nav { padding:0 1rem; }
+      .nav-links { display:none; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" onclick="showPage('shop')">
+    <span>Read</span><span class="dim">One</span><span>More</span>
+    <span class="dot"></span>
+  </a>
+  <ul class="nav-links">
+    <li><a onclick="showPage('shop')" data-page="shop">Shop</a></li>
+    <li><a onclick="showPage('wishlist')" data-page="wishlist">Wishlist</a></li>
+    <li><a onclick="showPage('badges')" data-page="badges">Badges</a></li>
+    <li id="admin-nav" style="display:none"><a onclick="showPage('admin')" data-page="admin">Admin</a></li>
+    <li id="auth-nav-login" ><a onclick="showPage('auth')">Login</a></li>
+    <li id="auth-nav-logout" style="display:none"><a onclick="logout()">Logout</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="cart-btn" onclick="showPage('cart')">
+      🛒 Cart <span class="cart-count" id="cart-count">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════════════════════════════════════════════════════ SHOP PAGE -->
+<div class="page active" id="page-shop">
+  <div class="hero">
+    <div class="hero-left">
+      <p class="eyebrow">Copenhagen · Secondhand Books</p>
+      <h1>Find your next<br><em>favourite</em> story.</h1>
+      <p class="hero-sub">Curated used books with a history — each one waiting for the right reader.</p>
+      <div class="hero-ctas">
+        <button class="btn btn-primary" onclick="document.getElementById('shop-grid-section').scrollIntoView({behavior:'smooth'})">Browse Books</button>
+        <button class="btn btn-outline" onclick="showPage('auth')">Create Account</button>
+      </div>
+    </div>
+    <div class="hero-right">
+      <div class="hero-stack">
+        <div class="book-thumb short" style="background:#8f0a1f">📕</div>
+        <div class="book-thumb tall" style="background:#1a3a5c">📘</div>
+        <div class="book-thumb" style="background:#2e4a2e">📗</div>
+        <div class="book-thumb short" style="background:#5c3a1a">📙</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="shop-wrap" id="shop-grid-section">
+    <div class="shop-header">
+      <h2>All Books</h2>
+      <div class="filters" id="genre-filters">
+        <span class="filter-pill active" onclick="filterGenre(null,this)">All</span>
+      </div>
+    </div>
+    <div class="search-row">
+      <input class="search-input" id="search-input" placeholder="Search by title, author or ISBN…" oninput="debounceSearch()">
+      <select class="sort-select" onchange="loadBooks()">
+        <option value="added_at-DESC">Newest first</option>
+        <option value="price-ASC">Price: low → high</option>
+        <option value="price-DESC">Price: high → low</option>
+        <option value="title-ASC">Title A–Z</option>
+      </select>
+    </div>
+    <div class="book-grid" id="book-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--mid);font-style:italic">Loading books…</div>
+    </div>
+    <div style="text-align:center;margin-top:2rem" id="load-more-wrap" hidden>
+      <button class="btn btn-outline" onclick="loadMoreBooks()">Load more</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ CART PAGE -->
+<div class="page" id="page-cart">
+  <div class="cart-wrap">
+    <h2>Your Cart</h2>
+    <div id="cart-content"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ CHECKOUT PAGE -->
+<div class="page" id="page-checkout">
+  <div class="checkout-wrap">
+    <h2>Checkout</h2>
+    <div class="form-section">
+      <h3>Delivery</h3>
+      <div class="delivery-toggle">
+        <button class="delivery-opt active" id="opt-shipping" onclick="setDelivery('shipping')">📦 Shipping</button>
+        <button class="delivery-opt" id="opt-pickup" onclick="setDelivery('pickup')">🏪 Pickup in store</button>
+      </div>
+      <div id="shipping-fields">
+        <div class="form-row">
+          <div class="form-group"><label>Full name</label><input type="text" id="sh-name" placeholder="Karen Hansen"></div>
+          <div class="form-group"><label>Phone</label><input type="text" id="sh-phone" placeholder="+45 12 34 56 78"></div>
+        </div>
+        <div class="form-group"><label>Address</label><input type="text" id="sh-line1" placeholder="Strøget 12, 2. sal"></div>
+        <div class="form-row">
+          <div class="form-group"><label>City</label><input type="text" id="sh-city" placeholder="Copenhagen"></div>
+          <div class="form-group"><label>Postal code</label><input type="text" id="sh-postal" placeholder="1000"></div>
+        </div>
+      </div>
+      <div id="pickup-info" style="display:none;background:var(--cream);border-left:3px solid var(--red);padding:1rem;font-style:italic;font-size:0.95rem;color:var(--mid)">
+        📍 Pick up at ReadOneMore, Vesterbrogade 44, 1620 Copenhagen — Mon–Sat 11:00–18:00
+      </div>
+    </div>
+    <div class="form-section">
+      <h3>Order Summary</h3>
+      <div id="checkout-summary"></div>
+    </div>
+    <div class="form-section">
+      <h3>Payment</h3>
+      <p style="color:var(--mid);font-size:0.9rem;margin-bottom:1rem;font-style:italic">Pay securely with MobilePay</p>
+      <button class="mobilepay-btn" onclick="initiatePayment()">
+        <span class="mobilepay-logo">MobilePay</span> — Pay now
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ WISHLIST PAGE -->
+<div class="page" id="page-wishlist">
+  <div class="badges-wrap">
+    <h2>Wishlist</h2>
+    <p class="badges-sub">Books you want to read — we'll keep them here for you.</p>
+    <div class="book-grid" id="wishlist-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ BADGES PAGE -->
+<div class="page" id="page-badges">
+  <div class="badges-wrap">
+    <h2>Reading Badges</h2>
+    <p class="badges-sub">Earn badges as you build your library.</p>
+    <div class="badges-grid" id="badges-grid"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ AUTH PAGE -->
+<div class="page" id="page-auth">
+  <div class="auth-wrap">
+    <div id="login-form">
+      <h2>Welcome back</h2>
+      <p class="auth-sub">Log in to your ReadOneMore account.</p>
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="••••••••"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="doLogin()">Log in</button>
+      <p class="auth-toggle">No account? <a onclick="toggleAuth()">Create one</a></p>
+    </div>
+    <div id="register-form" style="display:none">
+      <h2>Join ReadOneMore</h2>
+      <p class="auth-sub">Create an account to save wishlists, earn badges, and check out.</p>
+      <div class="form-group"><label>Full name</label><input type="text" id="reg-name" placeholder="Karen Hansen"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Phone (optional)</label><input type="text" id="reg-phone" placeholder="+45 12 34 56 78"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="min. 8 characters"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="doRegister()">Create account</button>
+      <p class="auth-toggle">Already have one? <a onclick="toggleAuth()">Log in</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ ADMIN PAGE -->
+<div class="page" id="page-admin">
+  <div class="admin-wrap">
+    <h2>Admin Dashboard</h2>
+    <div class="admin-tabs">
+      <button class="admin-tab active" onclick="adminTab('inventory',this)">📚 Inventory</button>
+      <button class="admin-tab" onclick="adminTab('add-book',this)">➕ Add Book</button>
+      <button class="admin-tab" onclick="adminTab('orders',this)">📦 Orders</button>
+      <button class="admin-tab" onclick="adminTab('stats',this)">📊 Stats</button>
+    </div>
+
+    <!-- INVENTORY -->
+    <div class="admin-panel active" id="panel-inventory">
+      <table class="admin-table" id="inventory-table">
+        <thead><tr><th>Cover</th><th>Title / Author</th><th>Genre</th><th>Condition</th><th>Price</th><th>Stock</th><th>Status</th><th>Actions</th></tr></thead>
+        <tbody id="inventory-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- ADD BOOK -->
+    <div class="admin-panel" id="panel-add-book">
+      <div class="book-form">
+        <h3 id="book-form-title">Add New Book</h3>
+        <input type="hidden" id="edit-book-id">
+        <div class="form-row">
+          <div class="form-group"><label>Title *</label><input type="text" id="f-title" placeholder="The Name of the Rose"></div>
+          <div class="form-group"><label>Author *</label><input type="text" id="f-author" placeholder="Umberto Eco"></div>
+        </div>
+        <div class="form-3col">
+          <div class="form-group"><label>Price (DKK) *</label><input type="text" id="f-price" placeholder="49"></div>
+          <div class="form-group"><label>Stock</label><input type="text" id="f-stock" placeholder="1"></div>
+          <div class="form-group"><label>Condition</label>
+            <select id="f-condition"><option value="like_new">Like new</option><option value="good" selected>Good</option><option value="fair">Fair</option><option value="worn">Worn</option></select>
+          </div>
+        </div>
+        <div class="form-3col">
+          <div class="form-group"><label>Genre</label><select id="f-genre"><option value="">— Select —</option></select></div>
+          <div class="form-group"><label>Year published</label><input type="text" id="f-year" placeholder="1980"></div>
+          <div class="form-group"><label>Edition</label><input type="text" id="f-edition" placeholder="1st edition"></div>
+        </div>
+        <div class="form-row">
+          <div class="form-group"><label>Language</label><input type="text" id="f-language" placeholder="English" value="English"></div>
+          <div class="form-group"><label>ISBN</label><input type="text" id="f-isbn" placeholder="978-..."></div>
+        </div>
+        <div class="form-group"><label>Cover image URL</label><input type="text" id="f-cover" placeholder="https://..."></div>
+        <div class="form-group"><label>Mood tags (comma-separated)</label><input type="text" id="f-moods" placeholder="cozy, melancholic, literary"></div>
+        <div class="form-group"><label>Provenance — story of this book</label><textarea id="f-provenance" rows="2" placeholder="Found in a Copenhagen flea market…"></textarea></div>
+        <div class="form-group"><label>Description</label><textarea id="f-description" rows="3" placeholder="Short synopsis or notes…"></textarea></div>
+        <div style="display:flex;gap:1rem;margin-top:1rem">
+          <button class="btn btn-primary" onclick="saveBook()">Save Book</button>
+          <button class="btn btn-outline" onclick="clearBookForm()">Clear</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ORDERS -->
+    <div class="admin-panel" id="panel-orders">
+      <table class="admin-table">
+        <thead><tr><th>Order #</th><th>Customer</th><th>Total</th><th>Delivery</th><th>Status</th><th>Date</th><th>Actions</th></tr></thead>
+        <tbody id="orders-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- STATS -->
+    <div class="admin-panel" id="panel-stats">
+      <div class="stats-grid" id="stats-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- BOOK DETAIL MODAL -->
+<div class="modal-overlay" id="book-modal" style="display:none" onclick="closeModal(event)">
+  <div class="modal" style="position:relative">
+    <button class="modal-close" onclick="closeBookModal()">✕</button>
+    <div class="modal-cover" id="modal-cover">📖</div>
+    <div class="modal-body">
+      <h2 id="modal-title"></h2>
+      <p class="modal-author" id="modal-author"></p>
+      <div class="modal-price" id="modal-price"></div>
+      <div class="modal-meta-row" id="modal-meta"></div>
+      <p class="modal-desc" id="modal-desc"></p>
+      <div class="modal-provenance" id="modal-prov" style="display:none"></div>
+      <div class="mood-tags" id="modal-moods"></div>
+      <div class="modal-actions" style="margin-top:1.2rem">
+        <button class="btn btn-primary" id="modal-add-cart-btn" onclick="addToCartFromModal()">Add to Cart</button>
+        <button class="btn btn-ghost" id="modal-wishlist-btn" onclick="toggleWishlistFromModal()">♡ Wishlist</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>ReadOneMore</strong><br>
+  Vesterbrogade 44 · 1620 Copenhagen · hello@readonemore.dk
+</footer>
+
+<script>
+// ══════════════════════════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════════════════════════
+const API = '/api';
+let token = localStorage.getItem('rom_token');
+let currentUser = JSON.parse(localStorage.getItem('rom_user') || 'null');
+let currentPage = 1;
+let currentGenre = null;
+let currentBook = null;
+let cartData = { items: [], subtotal: 0, shippingFee: 0, total: 0 };
+let deliveryMethod = 'shipping';
+let searchTimer = null;
+
+// ══════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+  updateNavForUser();
+  loadGenres();
+  loadBooks();
+  if (token) loadCart();
+});
+
+function authHeaders() {
+  return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
+}
+
+async function api(method, path, body) {
+  const res = await fetch(API + path, {
+    method,
+    headers: authHeaders(),
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || 'Request failed');
+  return data;
+}
+
+// ══════════════════════════════════════════════════════════════
+// NAVIGATION
+// ══════════════════════════════════════════════════════════════
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelectorAll('.nav-links a[data-page]').forEach(a =>
+    a.classList.toggle('active', a.dataset.page === name)
+  );
+  if (name === 'cart')     loadCartPage();
+  if (name === 'checkout') loadCheckoutSummary();
+  if (name === 'badges')   loadBadges();
+  if (name === 'wishlist') loadWishlist();
+  if (name === 'admin')    { loadInventory(); loadAdminOrders(); loadStats(); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════════════════════════
+function toast(msg, type='') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = `toast show ${type}`;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 3500);
+}
+
+// ══════════════════════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════════════════════
+function updateNavForUser() {
+  const loggedIn = !!token;
+  document.getElementById('auth-nav-login').style.display  = loggedIn ? 'none' : '';
+  document.getElementById('auth-nav-logout').style.display = loggedIn ? '' : 'none';
+  document.getElementById('admin-nav').style.display       = currentUser?.role === 'admin' ? '' : 'none';
+}
+
+function toggleAuth() {
+  document.getElementById('login-form').style.display    = document.getElementById('login-form').style.display === 'none' ? '' : 'none';
+  document.getElementById('register-form').style.display = document.getElementById('register-form').style.display === 'none' ? '' : 'none';
+}
+
+async function doLogin() {
+  try {
+    const data = await api('POST', '/auth/login', {
+      email: document.getElementById('login-email').value,
+      password: document.getElementById('login-password').value
+    });
+    setAuth(data.token, data.user);
+    toast('Welcome back, ' + data.user.full_name + '!', 'success');
+    showPage('shop');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function doRegister() {
+  try {
+    const data = await api('POST', '/auth/register', {
+      email: document.getElementById('reg-email').value,
+      password: document.getElementById('reg-password').value,
+      full_name: document.getElementById('reg-name').value,
+      phone: document.getElementById('reg-phone').value
+    });
+    setAuth(data.token, data.user);
+    toast('Account created! Welcome to ReadOneMore 📖', 'success');
+    showPage('shop');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+function setAuth(t, user) {
+  token = t; currentUser = user;
+  localStorage.setItem('rom_token', t);
+  localStorage.setItem('rom_user', JSON.stringify(user));
+  updateNavForUser();
+  loadCart();
+}
+
+function logout() {
+  token = null; currentUser = null;
+  localStorage.removeItem('rom_token');
+  localStorage.removeItem('rom_user');
+  updateNavForUser();
+  document.getElementById('cart-count').textContent = '0';
+  showPage('shop');
+  toast('Logged out.', '');
+}
+
+// ══════════════════════════════════════════════════════════════
+// SHOP / BOOKS
+// ══════════════════════════════════════════════════════════════
+async function loadGenres() {
+  try {
+    const genres = await api('GET', '/books/meta/genres');
+    const wrap = document.getElementById('genre-filters');
+    genres.slice(0, 10).forEach(g => {
+      const pill = document.createElement('span');
+      pill.className = 'filter-pill';
+      pill.textContent = g.name;
+      pill.onclick = () => filterGenre(g.name, pill);
+      wrap.appendChild(pill);
+    });
+    // also populate admin genre select
+    const sel = document.getElementById('f-genre');
+    genres.forEach(g => {
+      const o = document.createElement('option');
+      o.value = g.genre_id; o.textContent = g.name;
+      sel.appendChild(o);
+    });
+  } catch(e) {}
+}
+
+function filterGenre(genre, el) {
+  currentGenre = genre;
+  currentPage = 1;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  loadBooks();
+}
+
+function debounceSearch() {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(() => { currentPage = 1; loadBooks(); }, 350);
+}
+
+async function loadBooks(append = false) {
+  try {
+    const sort = document.querySelector('.sort-select').value.split('-');
+    const search = document.getElementById('search-input').value;
+    const params = new URLSearchParams({
+      page: currentPage, limit: 24,
+      sort: sort[0], order: sort[1],
+      ...(currentGenre ? { genre: currentGenre } : {}),
+      ...(search ? { search } : {})
+    });
+    const data = await api('GET', `/books?${params}`);
+    const grid = document.getElementById('book-grid');
+    if (!append) grid.innerHTML = '';
+    if (!data.books.length && !append) {
+      grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--mid);font-style:italic">No books found matching your search.</div>';
+    }
+    data.books.forEach(b => grid.appendChild(bookCard(b)));
+    const total = data.total;
+    const shown = currentPage * 24;
+    document.getElementById('load-more-wrap').hidden = shown >= total;
+  } catch(e) { console.error(e); }
+}
+
+function loadMoreBooks() {
+  currentPage++;
+  loadBooks(true);
+}
+
+function bookCard(b) {
+  const card = document.createElement('div');
+  card.className = 'book-card';
+  card.onclick = () => openBookModal(b);
+  const cover = b.cover_image_url
+    ? `<img src="${b.cover_image_url}" alt="${b.title}" loading="lazy">`
+    : `<div style="font-size:3rem">📖</div>`;
+  const condClass = `condition-badge cond-${b.condition}`;
+  const condLabel = {like_new:'Like new',good:'Good',fair:'Fair',worn:'Worn'}[b.condition] || b.condition;
+  card.innerHTML = `
+    <div class="book-cover">${cover}</div>
+    <div class="book-info">
+      <div class="book-title">${esc(b.title)}</div>
+      <div class="book-author">${esc(b.author)}</div>
+      <div class="book-meta">
+        <span class="book-price">${parseFloat(b.price).toFixed(0)} kr</span>
+        <span class="${condClass}">${condLabel}</span>
+      </div>
+      ${b.mood_tags?.length ? `<div class="mood-tags">${b.mood_tags.map(m=>`<span class="mood-tag">${m}</span>`).join('')}</div>` : ''}
+    </div>`;
+  return card;
+}
+
+// ══════════════════════════════════════════════════════════════
+// BOOK MODAL
+// ══════════════════════════════════════════════════════════════
+function openBookModal(b) {
+  currentBook = b;
+  document.getElementById('modal-title').textContent  = b.title;
+  document.getElementById('modal-author').textContent = `by ${b.author}`;
+  document.getElementById('modal-price').textContent  = `${parseFloat(b.price).toFixed(0)} kr`;
+  document.getElementById('modal-desc').textContent   = b.description || '';
+  const prov = document.getElementById('modal-prov');
+  if (b.provenance) { prov.textContent = `"${b.provenance}"`; prov.style.display = ''; }
+  else prov.style.display = 'none';
+  const cover = document.getElementById('modal-cover');
+  cover.innerHTML = b.cover_image_url ? `<img src="${b.cover_image_url}" alt="${b.title}">` : '📖';
+  const meta = document.getElementById('modal-meta');
+  meta.innerHTML = [
+    b.genre_name ? `<div class="modal-meta-item"><span>Genre</span>${esc(b.genre_name)}</div>` : '',
+    b.condition  ? `<div class="modal-meta-item"><span>Condition</span>${{like_new:'Like new',good:'Good',fair:'Fair',worn:'Worn'}[b.condition]}</div>` : '',
+    b.year_published ? `<div class="modal-meta-item"><span>Year</span>${b.year_published}</div>` : '',
+    b.edition ? `<div class="modal-meta-item"><span>Edition</span>${esc(b.edition)}</div>` : '',
+    b.language ? `<div class="modal-meta-item"><span>Language</span>${esc(b.language)}</div>` : '',
+  ].join('');
+  const moods = document.getElementById('modal-moods');
+  moods.innerHTML = (b.mood_tags || []).map(m => `<span class="mood-tag">${m}</span>`).join('');
+  document.getElementById('book-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeBookModal() {
+  document.getElementById('book-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('book-modal')) closeBookModal();
+}
+
+async function addToCartFromModal() {
+  if (!token) { toast('Please log in to add to cart', 'error'); showPage('auth'); return; }
+  try {
+    await api('POST', '/cart', { book_id: currentBook.book_id, quantity: 1 });
+    toast(`"${currentBook.title}" added to cart 🛒`, 'success');
+    loadCart();
+    closeBookModal();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function toggleWishlistFromModal() {
+  if (!token) { toast('Please log in', 'error'); return; }
+  try {
+    await api('POST', '/wishlist', { book_id: currentBook.book_id });
+    toast('Added to wishlist ♡', 'success');
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// CART
+// ══════════════════════════════════════════════════════════════
+async function loadCart() {
+  if (!token) return;
+  try {
+    cartData = await api('GET', '/cart');
+    document.getElementById('cart-count').textContent = cartData.items.reduce((s,i)=>s+i.quantity,0);
+  } catch(e) {}
+}
+
+async function loadCartPage() {
+  if (!token) {
+    document.getElementById('cart-content').innerHTML = `<div class="empty"><div class="empty-icon">🛒</div><h3>Log in to view your cart</h3><button class="btn btn-primary" onclick="showPage('auth')">Log in</button></div>`;
+    return;
+  }
+  await loadCart();
+  const el = document.getElementById('cart-content');
+  if (!cartData.items.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><h3>Your cart is empty</h3><p>Browse the shop and add something good.</p><button class="btn btn-primary" onclick="showPage('shop')">Browse Books</button></div>`;
+    return;
+  }
+  const itemsHTML = cartData.items.map(i => `
+    <div class="cart-item">
+      <div class="cart-item-cover">
+        ${i.cover_image_url ? `<img src="${i.cover_image_url}" alt="${esc(i.title)}">` : '📖'}
+      </div>
+      <div>
+        <div class="cart-item-title">${esc(i.title)}</div>
+        <div class="cart-item-author">${esc(i.author)}</div>
+        <div style="font-size:0.8rem;color:var(--mid)">${{like_new:'Like new',good:'Good',fair:'Fair',worn:'Worn'}[i.condition]||i.condition}</div>
+      </div>
+      <div class="qty-control">
+        <button class="qty-btn" onclick="updateQty(${i.book_id}, ${i.quantity-1})">−</button>
+        <span class="qty-val">${i.quantity}</span>
+        <button class="qty-btn" onclick="updateQty(${i.book_id}, ${i.quantity+1})">+</button>
+      </div>
+      <div class="cart-item-price">${(parseFloat(i.price)*i.quantity).toFixed(0)} kr</div>
+    </div>`).join('');
+
+  const totalBooks = cartData.items.reduce((s,i)=>s+i.quantity,0);
+  const freeShipping = totalBooks >= 3;
+  el.innerHTML = itemsHTML + `
+    <div class="cart-summary">
+      <div class="summary-row"><span>Subtotal</span><span class="summary-total">${parseFloat(cartData.subtotal).toFixed(2)} kr</span></div>
+      <div class="summary-row"><span>Shipping</span><span class="summary-total">${freeShipping || cartData.shippingFee===0 ? 'Free 🎉' : cartData.shippingFee+' kr'}</span></div>
+      ${freeShipping ? '<p class="free-shipping-note">✓ Free shipping unlocked (3+ books)</p>' : `<p class="shipping-note">Order 3+ books for free shipping</p>`}
+      <div class="summary-row" style="margin-top:0.5rem"><strong>Total</strong><strong class="summary-total" style="color:var(--red)">${parseFloat(cartData.total).toFixed(2)} kr</strong></div>
+    </div>
+    <div style="margin-top:1.5rem;display:flex;gap:1rem">
+      <button class="btn btn-primary" onclick="showPage('checkout')">Proceed to Checkout →</button>
+      <button class="btn btn-outline" onclick="showPage('shop')">Continue shopping</button>
+    </div>`;
+}
+
+async function updateQty(bookId, qty) {
+  try {
+    await api('PUT', `/cart/${bookId}`, { quantity: qty });
+    loadCartPage();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// CHECKOUT
+// ══════════════════════════════════════════════════════════════
+function setDelivery(method) {
+  deliveryMethod = method;
+  document.getElementById('opt-shipping').classList.toggle('active', method==='shipping');
+  document.getElementById('opt-pickup').classList.toggle('active', method==='pickup');
+  document.getElementById('shipping-fields').style.display = method==='shipping' ? '' : 'none';
+  document.getElementById('pickup-info').style.display     = method==='pickup'   ? '' : 'none';
+}
+
+function loadCheckoutSummary() {
+  const el = document.getElementById('checkout-summary');
+  if (!cartData.items.length) { el.innerHTML = '<p style="color:var(--mid);font-style:italic">Your cart is empty.</p>'; return; }
+  el.innerHTML = cartData.items.map(i=>`<div class="summary-row"><span>${esc(i.title)} ×${i.quantity}</span><span>${(parseFloat(i.price)*i.quantity).toFixed(2)} kr</span></div>`).join('') +
+    `<div class="summary-row"><span>Shipping</span><span>${cartData.shippingFee===0?'Free':cartData.shippingFee+' kr'}</span></div>
+     <div class="summary-row" style="border-top:2px solid var(--red);margin-top:0.5rem;padding-top:0.5rem"><strong>Total</strong><strong style="color:var(--red)">${parseFloat(cartData.total).toFixed(2)} kr</strong></div>`;
+}
+
+async function initiatePayment() {
+  if (!token) { toast('Please log in first', 'error'); return; }
+  try {
+    // Create order first
+    const addressData = deliveryMethod === 'shipping' ? {
+      full_name: document.getElementById('sh-name').value,
+      line1: document.getElementById('sh-line1').value,
+      city: document.getElementById('sh-city').value,
+      postal_code: document.getElementById('sh-postal').value,
+      country: 'Denmark'
+    } : null;
+    let address_id = null;
+    if (addressData) {
+      const addr = await api('POST', '/auth/address', addressData).catch(()=>null);
+      address_id = addr?.address_id;
+    }
+    const order = await api('POST', '/orders', { delivery_method: deliveryMethod, address_id });
+    // Then initiate MobilePay
+    const payment = await api('POST', '/payments/mobilepay/initiate', { order_id: order.order_id });
+    if (payment.redirectUrl) {
+      window.location.href = payment.redirectUrl;
+    } else {
+      toast('Payment initiated! Check MobilePay.', 'success');
+      showPage('shop');
+    }
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// WISHLIST
+// ══════════════════════════════════════════════════════════════
+async function loadWishlist() {
+  if (!token) {
+    document.getElementById('wishlist-grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">♡</div><h3>Log in to see your wishlist</h3><button class="btn btn-primary" onclick="showPage('auth')">Log in</button></div>`;
+    return;
+  }
+  try {
+    const items = await api('GET', '/wishlist');
+    const grid = document.getElementById('wishlist-grid');
+    if (!items.length) { grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">♡</div><h3>Your wishlist is empty</h3><p>Browse the shop and save books you love.</p></div>`; return; }
+    grid.innerHTML = '';
+    items.forEach(b => {
+      const card = bookCard(b);
+      grid.appendChild(card);
+    });
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════
+// BADGES
+// ══════════════════════════════════════════════════════════════
+async function loadBadges() {
+  try {
+    const badges = token ? await api('GET', '/badges/my') : await api('GET', '/badges');
+    const grid = document.getElementById('badges-grid');
+    grid.innerHTML = '';
+    badges.forEach(b => {
+      const earned = !!b.unlocked_at;
+      const card = document.createElement('div');
+      card.className = 'badge-card' + (earned ? ' earned' : '');
+      card.innerHTML = `
+        <div class="badge-icon">${b.icon}</div>
+        <div class="badge-name">${esc(b.name)}</div>
+        <div class="badge-desc">${esc(b.description)}</div>
+        ${earned
+          ? `<span class="badge-earned-label">✓ Earned ${new Date(b.unlocked_at).toLocaleDateString('da-DK')}</span>`
+          : `<span class="badge-locked">Locked</span>`}`;
+      grid.appendChild(card);
+    });
+  } catch(e) {}
+}
+
+// ══════════════════════════════════════════════════════════════
+// ADMIN
+// ══════════════════════════════════════════════════════════════
+function adminTab(panel, el) {
+  document.querySelectorAll('.admin-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.admin-panel').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('panel-'+panel).classList.add('active');
+}
+
+async function loadInventory() {
+  try {
+    const books = await api('GET', '/admin/inventory');
+    const tbody = document.getElementById('inventory-tbody');
+    tbody.innerHTML = books.map(b => `
+      <tr>
+        <td>${b.cover_image_url ? `<img src="${b.cover_image_url}" style="width:40px;height:55px;object-fit:cover;border-radius:2px">` : '📖'}</td>
+        <td><strong>${esc(b.title)}</strong><br><small style="color:var(--mid)">${esc(b.author)}</small></td>
+        <td>${esc(b.genre_name||'—')}</td>
+        <td><span class="condition-badge cond-${b.condition}">${b.condition}</span></td>
+        <td style="font-family:'DM Mono',monospace">${parseFloat(b.price).toFixed(0)} kr</td>
+        <td style="font-family:'DM Mono',monospace">${b.stock}</td>
+        <td><span style="font-size:0.75rem;padding:0.2rem 0.5rem;border-radius:20px;background:${b.status==='available'?'#e8f5e9':b.status==='sold'?'#fce4ec':'#fff8e1'};color:${b.status==='available'?'#2e7d32':b.status==='sold'?'#880e4f':'#e65100'}">${b.status}</span></td>
+        <td>
+          <button class="btn btn-sm btn-ghost" onclick="editBook(${JSON.stringify(b).replace(/"/g,'&quot;')})">Edit</button>
+          <button class="btn btn-sm btn-outline" onclick="deleteBook(${b.book_id})">Remove</button>
+        </td>
+      </tr>`).join('');
+  } catch(e) {}
+}
+
+async function loadAdminOrders() {
+  try {
+    const orders = await api('GET', '/orders');
+    const tbody = document.getElementById('orders-tbody');
+    tbody.innerHTML = orders.map(o => `
+      <tr>
+        <td style="font-family:'DM Mono',monospace">#${o.order_id}</td>
+        <td>${esc(o.full_name)}<br><small style="color:var(--mid)">${esc(o.email)}</small></td>
+        <td style="font-family:'DM Mono',monospace">${parseFloat(o.total).toFixed(2)} kr</td>
+        <td>${o.delivery_method === 'pickup' ? '🏪 Pickup' : '📦 Shipping'}</td>
+        <td><span style="font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;background:var(--cream)">${o.status}</span></td>
+        <td style="font-size:0.82rem">${new Date(o.created_at).toLocaleDateString('da-DK')}</td>
+        <td>
+          <select onchange="updateOrderStatus(${o.order_id},this.value)" style="font-size:0.8rem;padding:0.2rem">
+            <option value="">Change status…</option>
+            <option value="paid">Paid</option>
+            <option value="shipped">Shipped</option>
+            <option value="ready_for_pickup">Ready for pickup</option>
+            <option value="completed">Completed</option>
+            <option value="cancelled">Cancelled</option>
+          </select>
+          <button class="btn btn-sm btn-ghost" onclick="downloadReport(${o.order_id})" style="margin-top:0.3rem">PDF</button>
+        </td>
+      </tr>`).join('');
+  } catch(e) {}
+}
+
+async function updateOrderStatus(orderId, status) {
+  if (!status) return;
+  try {
+    await api('PATCH', `/orders/${orderId}/status`, { status });
+    toast('Order status updated', 'success');
+    loadAdminOrders();
+  } catch(e) { toast(e.message,'error'); }
+}
+
+async function downloadReport(orderId) {
+  window.open(`${API}/reports/orders/${orderId}/pdf?token=${token}`, '_blank');
+}
+
+async function loadStats() {
+  try {
+    const s = await api('GET', '/admin/stats');
+    const grid = document.getElementById('stats-grid');
+    const paid = s.ordersByStatus.find(r=>r.status==='completed')?.count || 0;
+    const available = s.booksByStatus.find(r=>r.status==='available')?.count || 0;
+    grid.innerHTML = `
+      <div class="stat-card"><div class="stat-val">${parseFloat(s.totalRevenue).toFixed(0)} kr</div><div class="stat-label">Total Revenue</div></div>
+      <div class="stat-card"><div class="stat-val">${paid}</div><div class="stat-label">Completed Orders</div></div>
+      <div class="stat-card"><div class="stat-val">${available}</div><div class="stat-label">Books Available</div></div>
+      <div class="stat-card"><div class="stat-val">${s.totalCustomers}</div><div class="stat-label">Customers</div></div>`;
+  } catch(e) {}
+}
+
+async function saveBook() {
+  const id = document.getElementById('edit-book-id').value;
+  const body = {
+    title: document.getElementById('f-title').value,
+    author: document.getElementById('f-author').value,
+    price: document.getElementById('f-price').value,
+    stock: document.getElementById('f-stock').value || 1,
+    condition: document.getElementById('f-condition').value,
+    genre_id: document.getElementById('f-genre').value || null,
+    year_published: document.getElementById('f-year').value || null,
+    edition: document.getElementById('f-edition').value || null,
+    language: document.getElementById('f-language').value || 'English',
+    isbn: document.getElementById('f-isbn').value || null,
+    cover_image_url: document.getElementById('f-cover').value || null,
+    mood_tags: document.getElementById('f-moods').value ? document.getElementById('f-moods').value.split(',').map(s=>s.trim()).filter(Boolean) : null,
+    provenance: document.getElementById('f-provenance').value || null,
+    description: document.getElementById('f-description').value || null,
+  };
+  try {
+    if (id) { await api('PUT', `/books/${id}`, body); toast('Book updated!','success'); }
+    else    { await api('POST', '/books', body); toast('Book added to inventory!','success'); }
+    clearBookForm();
+    loadInventory();
+    adminTab('inventory', document.querySelectorAll('.admin-tab')[0]);
+  } catch(e) { toast(e.message,'error'); }
+}
+
+function editBook(b) {
+  document.getElementById('edit-book-id').value = b.book_id;
+  document.getElementById('f-title').value = b.title || '';
+  document.getElementById('f-author').value = b.author || '';
+  document.getElementById('f-price').value = b.price || '';
+  document.getElementById('f-stock').value = b.stock || 1;
+  document.getElementById('f-condition').value = b.condition || 'good';
+  document.getElementById('f-year').value = b.year_published || '';
+  document.getElementById('f-edition').value = b.edition || '';
+  document.getElementById('f-language').value = b.language || 'English';
+  document.getElementById('f-isbn').value = b.isbn || '';
+  document.getElementById('f-cover').value = b.cover_image_url || '';
+  document.getElementById('f-moods').value = (b.mood_tags||[]).join(', ');
+  document.getElementById('f-provenance').value = b.provenance || '';
+  document.getElementById('f-description').value = b.description || '';
+  document.getElementById('f-genre').value = b.genre_id || '';
+  document.getElementById('book-form-title').textContent = 'Edit Book';
+  adminTab('add-book', document.querySelectorAll('.admin-tab')[1]);
+}
+
+function clearBookForm() {
+  ['f-title','f-author','f-price','f-stock','f-year','f-edition','f-language','f-isbn','f-cover','f-moods','f-provenance','f-description'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-condition').value = 'good';
+  document.getElementById('f-genre').value = '';
+  document.getElementById('edit-book-id').value = '';
+  document.getElementById('book-form-title').textContent = 'Add New Book';
+}
+
+async function deleteBook(id) {
+  if (!confirm('Remove this book from the inventory?')) return;
+  try { await api('DELETE', `/books/${id}`); toast('Book removed','success'); loadInventory(); }
+  catch(e) { toast(e.message,'error'); }
+}
+
+// ══════════════════════════════════════════════════════════════
+// UTILITIES
+// ══════════════════════════════════════════════════════════════
+function esc(str) {
+  return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+</body>
+</html>
