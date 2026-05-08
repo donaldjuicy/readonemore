@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ReadOneMore — Scanner</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #f5f3ee; color: #2a2a2a; min-height: 100vh; padding: 16px; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .subtitle { font-size: 13px; color: #777; margin-bottom: 16px; }
+  .counter { background: #2a2a2a; color: #f5f3ee; padding: 10px 14px; border-radius: 8px; font-size: 14px; margin-bottom: 16px; display: flex; justify-content: space-between; }
+  .scanner-section { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.04); }
+  #video-container { position: relative; width: 100%; aspect-ratio: 4/3; background: #000; border-radius: 8px; overflow: hidden; margin-bottom: 12px; display: none; }
+  #video { width: 100%; height: 100%; object-fit: cover; }
+  .scan-overlay { position: absolute; top: 30%; left: 10%; right: 10%; height: 40%; border: 3px solid #ff4444; border-radius: 4px; pointer-events: none; }
+  button { width: 100%; padding: 14px; font-size: 16px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; margin-bottom: 8px; }
+  .btn-primary { background: #2a2a2a; color: #f5f3ee; }
+  .btn-secondary { background: #e8e4dc; color: #2a2a2a; }
+  .btn-success { background: #4a7c4e; color: #fff; }
+  .manual-isbn { display: flex; gap: 8px; margin-top: 8px; }
+  .manual-isbn input { flex: 1; padding: 12px; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; }
+  .manual-isbn button { width: auto; padding: 12px 16px; margin: 0; }
+  .form-section { background: #fff; border-radius: 12px; padding: 16px; display: none; }
+  .form-section.visible { display: block; }
+  .cover-preview { width: 100%; max-width: 200px; aspect-ratio: 2/3; margin: 0 auto 16px; background: #eee; border-radius: 6px; overflow: hidden; position: relative; display: flex; align-items: center; justify-content: center; }
+  .cover-preview img { width: 100%; height: 100%; object-fit: cover; }
+  .cover-preview .placeholder { color: #aaa; font-size: 13px; text-align: center; padding: 12px; }
+  .cover-source-tag { position: absolute; bottom: 4px; left: 4px; background: rgba(0,0,0,0.7); color: #fff; font-size: 10px; padding: 2px 6px; border-radius: 3px; }
+  .photo-buttons { display: flex; gap: 8px; margin-bottom: 16px; }
+  .photo-buttons label { flex: 1; }
+  .photo-buttons label button { pointer-events: none; }
+  .field { margin-bottom: 12px; }
+  label.field-label { display: block; font-size: 13px; color: #666; margin-bottom: 4px; font-weight: 600; }
+  input, select, textarea { width: 100%; padding: 10px; font-size: 16px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
+  textarea { resize: vertical; min-height: 60px; }
+  .row { display: flex; gap: 8px; }
+  .row .field { flex: 1; }
+  .status-msg { padding: 10px; border-radius: 6px; margin: 8px 0; font-size: 14px; text-align: center; }
+  .status-msg.error { background: #fee; color: #c44; }
+  .status-msg.success { background: #efe; color: #4a7c4e; }
+  .status-msg.info { background: #eef; color: #446; }
+  .login-section { padding: 20px; }
+  .hidden { display: none !important; }
+  .toggle-link { background: none; border: none; color: #4a6; font-size: 13px; padding: 0; margin: 0; width: auto; cursor: pointer; text-decoration: underline; font-weight: normal; }
+  input[type=file] { display: none; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-section" class="login-section">
+  <h1>📷 Book Scanner</h1>
+  <p class="subtitle">Log in as admin to start scanning</p>
+  <div class="field">
+    <label class="field-label">Email</label>
+    <input type="email" id="login-email" value="admin@readonemore.dk">
+  </div>
+  <div class="field">
+    <label class="field-label">Password</label>
+    <input type="password" id="login-password">
+  </div>
+  <button class="btn-primary" onclick="login()">Log in</button>
+  <div id="login-status"></div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" class="hidden">
+  <h1>📷 Book Scanner</h1>
+  <p class="subtitle">Scan barcode or type ISBN, then photograph the cover</p>
+
+  <div class="counter">
+    <span>Cataloged this session:</span>
+    <strong id="counter">0</strong>
+  </div>
+
+  <div class="scanner-section">
+    <div id="video-container">
+      <video id="video" autoplay playsinline muted></video>
+      <div class="scan-overlay"></div>
+    </div>
+    <button class="btn-primary" id="start-scan-btn" onclick="startScan()">Start camera (scan barcode)</button>
+    <button class="btn-secondary" id="stop-scan-btn" onclick="stopScan()" style="display:none">Stop camera</button>
+    <div class="manual-isbn">
+      <input type="text" id="manual-isbn" placeholder="Or type ISBN" inputmode="numeric">
+      <button class="btn-secondary" onclick="lookupManualISBN()">Lookup</button>
+    </div>
+    <button class="btn-secondary" onclick="showManualEntry()" style="margin-top: 8px">No ISBN — manual entry</button>
+    <div id="scan-status"></div>
+  </div>
+
+  <!-- BOOK FORM -->
+  <div class="form-section" id="form-section">
+
+    <!-- Cover preview + photo controls -->
+    <div class="cover-preview" id="cover-preview">
+      <div class="placeholder" id="cover-placeholder">No cover yet</div>
+      <img id="cover-img" src="" alt="" style="display:none">
+      <span class="cover-source-tag" id="cover-source" style="display:none"></span>
+    </div>
+
+    <div class="photo-buttons">
+      <label>
+        <input type="file" accept="image/*" capture="environment" id="photo-camera" onchange="uploadPhoto(this)">
+        <button type="button" class="btn-primary" onclick="document.getElementById('photo-camera').click()">📷 Take photo</button>
+      </label>
+      <label>
+        <input type="file" accept="image/*" id="photo-library" onchange="uploadPhoto(this)">
+        <button type="button" class="btn-secondary" onclick="document.getElementById('photo-library').click()">🖼️ From library</button>
+      </label>
+    </div>
+    <div id="upload-status"></div>
+
+    <div class="field">
+      <label class="field-label">Title *</label>
+      <input type="text" id="f-title">
+    </div>
+    <div class="field">
+      <label class="field-label">Author *</label>
+      <input type="text" id="f-author">
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label class="field-label">Year</label>
+        <input type="number" id="f-year">
+      </div>
+      <div class="field">
+        <label class="field-label">ISBN</label>
+        <input type="text" id="f-isbn" readonly style="background:#f5f5f5">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Genre</label>
+      <select id="f-genre"></select>
+    </div>
+
+    <div class="row">
+      <div class="field">
+        <label class="field-label">Condition *</label>
+        <select id="f-condition">
+          <option value="like_new">Like new</option>
+          <option value="good" selected>Good</option>
+          <option value="fair">Fair</option>
+          <option value="worn">Worn</option>
+        </select>
+      </div>
+      <div class="field">
+        <label class="field-label">Stock</label>
+        <input type="number" id="f-stock" value="1" min="1">
+      </div>
+    </div>
+
+    <div class="field">
+      <label class="field-label">Price (DKK) *</label>
+      <input type="number" id="f-price" step="0.01" placeholder="e.g. 45">
+    </div>
+
+    <!-- Description hidden by default -->
+    <div class="field">
+      <button type="button" class="toggle-link" onclick="toggleDescription()">
+        <span id="desc-toggle-label">▸ Show description (optional)</span>
+      </button>
+      <div id="desc-wrapper" style="display:none; margin-top: 8px">
+        <textarea id="f-description" placeholder="Auto-filled from Google Books — edit if you like"></textarea>
+      </div>
+    </div>
+
+    <button class="btn-success" onclick="saveBook()">💾 Save & next</button>
+    <button class="btn-secondary" onclick="cancelForm()">Cancel / skip</button>
+    <div id="form-status"></div>
+  </div>
+</div>
+
+<script>
+const API = '';
+let token = localStorage.getItem('rom_token') || '';
+let stream = null;
+let scanLoop = null;
+let detector = null;
+let counter = parseInt(localStorage.getItem('rom_session_counter') || '0', 10);
+let genres = [];
+let currentCoverUrl = null;       // what gets saved to DB
+let coverSource = null;           // 'google' or 'upload'
+
+// ─── auth ─────────────────────────────────────────────
+async function login() {
+  const email = document.getElementById('login-email').value;
+  const password = document.getElementById('login-password').value;
+  const status = document.getElementById('login-status');
+  status.innerHTML = '';
+  try {
+    const res = await fetch(API + '/api/auth/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Login failed');
+    token = data.token;
+    localStorage.setItem('rom_token', token);
+    showApp();
+  } catch (err) {
+    status.innerHTML = `<div class="status-msg error">${err.message}</div>`;
+  }
+}
+
+function logout() { localStorage.removeItem('rom_token'); token = ''; location.reload(); }
+
+async function authedFetch(url, options = {}) {
+  options.headers = { ...(options.headers || {}), Authorization: 'Bearer ' + token };
+  if (options.body && !(options.body instanceof FormData) && !options.headers['Content-Type']) {
+    options.headers['Content-Type'] = 'application/json';
+  }
+  const res = await fetch(API + url, options);
+  if (res.status === 401) { logout(); throw new Error('Session expired — please log in again'); }
+  return res;
+}
+
+function showApp() {
+  document.getElementById('login-section').classList.add('hidden');
+  document.getElementById('app').classList.remove('hidden');
+  document.getElementById('counter').textContent = counter;
+  loadGenres();
+}
+
+// ─── genres ───────────────────────────────────────────
+async function loadGenres() {
+  try {
+    const res = await authedFetch('/api/admin/genres');
+    genres = await res.json();
+    const select = document.getElementById('f-genre');
+    select.innerHTML = '<option value="">— none —</option>' +
+      genres.map(g => `<option value="${g.genre_id}">${g.name}</option>`).join('');
+  } catch (err) { console.error('Failed to load genres:', err); }
+}
+
+// ─── scanner ──────────────────────────────────────────
+async function startScan() {
+  const status = document.getElementById('scan-status');
+  status.innerHTML = '';
+  if (!('BarcodeDetector' in window)) {
+    status.innerHTML = '<div class="status-msg error">This browser does not support BarcodeDetector. Use Chrome on Android, or type the ISBN manually.</div>';
+    return;
+  }
+  try {
+    detector = new BarcodeDetector({ formats: ['ean_13', 'ean_8', 'upc_a'] });
+    stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+    const video = document.getElementById('video');
+    video.srcObject = stream;
+    document.getElementById('video-container').style.display = 'block';
+    document.getElementById('start-scan-btn').style.display = 'none';
+    document.getElementById('stop-scan-btn').style.display = 'block';
+    status.innerHTML = '<div class="status-msg info">Point camera at barcode…</div>';
+    scanLoop = setInterval(() => detectBarcode(video), 400);
+  } catch (err) {
+    status.innerHTML = `<div class="status-msg error">Camera error: ${err.message}</div>`;
+  }
+}
+
+function stopScan() {
+  if (scanLoop) { clearInterval(scanLoop); scanLoop = null; }
+  if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+  document.getElementById('video-container').style.display = 'none';
+  document.getElementById('start-scan-btn').style.display = 'block';
+  document.getElementById('stop-scan-btn').style.display = 'none';
+  document.getElementById('scan-status').innerHTML = '';
+}
+
+async function detectBarcode(video) {
+  if (!detector || !video.videoWidth) return;
+  try {
+    const codes = await detector.detect(video);
+    if (codes.length > 0) {
+      const isbn = codes[0].rawValue;
+      stopScan();
+      navigator.vibrate?.(100);
+      lookupISBN(isbn);
+    }
+  } catch (err) {}
+}
+
+// ─── ISBN lookup ──────────────────────────────────────
+function lookupManualISBN() {
+  const isbn = document.getElementById('manual-isbn').value.trim();
+  if (!isbn) return;
+  lookupISBN(isbn);
+}
+
+async function lookupISBN(isbn) {
+  const status = document.getElementById('scan-status');
+  status.innerHTML = `<div class="status-msg info">Looking up ${isbn}…</div>`;
+  try {
+    const res = await authedFetch('/api/admin/isbn-lookup/' + encodeURIComponent(isbn));
+    if (res.status === 404) {
+      status.innerHTML = `<div class="status-msg error">No data for ${isbn}. Filling manually.</div>`;
+      showManualEntry(isbn);
+      return;
+    }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Lookup failed');
+    fillForm(data);
+    status.innerHTML = `<div class="status-msg success">✓ Found: ${data.title}</div>`;
+  } catch (err) {
+    status.innerHTML = `<div class="status-msg error">${err.message}</div>`;
+  }
+}
+
+// ─── form ─────────────────────────────────────────────
+function fillForm(data) {
+  document.getElementById('f-title').value = data.title || '';
+  document.getElementById('f-author').value = (data.authors || []).join(', ');
+  document.getElementById('f-year').value = data.year || '';
+  document.getElementById('f-isbn').value = data.isbn || '';
+  document.getElementById('f-description').value = data.description || '';
+  document.getElementById('f-stock').value = 1;
+  document.getElementById('f-price').value = '';
+  document.getElementById('f-condition').value = 'good';
+
+  // Reset description toggle
+  document.getElementById('desc-wrapper').style.display = 'none';
+  document.getElementById('desc-toggle-label').textContent = '▸ Show description (optional)';
+
+  // Cover: start with Google's, mark source so user knows to replace it
+  setCover(data.cover_url, data.cover_url ? 'google' : null);
+
+  // Genre match
+  const select = document.getElementById('f-genre');
+  select.value = '';
+  if (data.categories && data.categories.length) {
+    const cat = data.categories[0].toLowerCase();
+    const match = genres.find(g => cat.includes(g.name.toLowerCase()) || g.name.toLowerCase().includes(cat));
+    if (match) select.value = match.genre_id;
+  }
+
+  document.getElementById('form-section').classList.add('visible');
+  document.getElementById('manual-isbn').value = '';
+  document.getElementById('upload-status').innerHTML = '';
+}
+
+function setCover(url, source) {
+  currentCoverUrl = url || null;
+  coverSource = source;
+  const img = document.getElementById('cover-img');
+  const placeholder = document.getElementById('cover-placeholder');
+  const tag = document.getElementById('cover-source');
+  if (url) {
+    img.src = url; img.style.display = 'block';
+    placeholder.style.display = 'none';
+    tag.style.display = 'inline-block';
+    tag.textContent = source === 'upload' ? 'Your photo' : 'Google preview';
+    tag.style.background = source === 'upload' ? 'rgba(74,124,78,0.85)' : 'rgba(0,0,0,0.7)';
+  } else {
+    img.style.display = 'none';
+    placeholder.style.display = 'block';
+    tag.style.display = 'none';
+  }
+}
+
+function showManualEntry(isbn = '') {
+  fillForm({ isbn, title: '', authors: [], year: null, description: '', cover_url: null, categories: [] });
+}
+
+function cancelForm() {
+  document.getElementById('form-section').classList.remove('visible');
+  document.getElementById('scan-status').innerHTML = '';
+  document.getElementById('manual-isbn').value = '';
+  currentCoverUrl = null; coverSource = null;
+}
+
+function toggleDescription() {
+  const wrapper = document.getElementById('desc-wrapper');
+  const label = document.getElementById('desc-toggle-label');
+  if (wrapper.style.display === 'none') {
+    wrapper.style.display = 'block';
+    label.textContent = '▾ Hide description';
+  } else {
+    wrapper.style.display = 'none';
+    label.textContent = '▸ Show description (optional)';
+  }
+}
+
+// ─── photo upload ─────────────────────────────────────
+async function uploadPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const status = document.getElementById('upload-status');
+  status.innerHTML = '<div class="status-msg info">Uploading photo…</div>';
+
+  const formData = new FormData();
+  formData.append('photo', file);
+
+  try {
+    const res = await authedFetch('/api/admin/upload-cover', { method: 'POST', body: formData });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Upload failed');
+    setCover(data.url, 'upload');
+    status.innerHTML = '<div class="status-msg success">✓ Photo uploaded</div>';
+  } catch (err) {
+    status.innerHTML = `<div class="status-msg error">${err.message}</div>`;
+  }
+  input.value = ''; // reset so same file can be re-picked
+}
+
+// ─── save book ────────────────────────────────────────
+async function saveBook() {
+  const status = document.getElementById('form-status');
+  const title = document.getElementById('f-title').value.trim();
+  const author = document.getElementById('f-author').value.trim();
+  const price = parseFloat(document.getElementById('f-price').value);
+
+  if (!title || !author || isNaN(price)) {
+    status.innerHTML = '<div class="status-msg error">Title, author and price are required.</div>';
+    return;
+  }
+
+  const payload = {
+    title, author,
+    isbn: document.getElementById('f-isbn').value.trim() || null,
+    genre_id: document.getElementById('f-genre').value || null,
+    condition: document.getElementById('f-condition').value,
+    year_published: parseInt(document.getElementById('f-year').value) || null,
+    price,
+    stock: parseInt(document.getElementById('f-stock').value) || 1,
+    cover_image_url: currentCoverUrl,
+    description: document.getElementById('f-description').value.trim() || null
+  };
+
+  try {
+    const res = await authedFetch('/api/admin/books', { method: 'POST', body: JSON.stringify(payload) });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Save failed');
+    counter++;
+    localStorage.setItem('rom_session_counter', counter);
+    document.getElementById('counter').textContent = counter;
+    cancelForm();
+    document.getElementById('scan-status').innerHTML = `<div class="status-msg success">✓ Saved: ${data.title}</div>`;
+    navigator.vibrate?.([50, 30, 50]);
+  } catch (err) {
+    status.innerHTML = `<div class="status-msg error">${err.message}</div>`;
+  }
+}
+
+// ─── boot ─────────────────────────────────────────────
+if (token) showApp();
+</script>
+</body>
+</html>
