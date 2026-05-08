@@ -797,14 +797,15 @@ async function loadCartPage() {
         <button class="qty-btn" onclick="updateQty(${i.book_id}, ${i.quantity+1})">+</button>
       </div>
       <div class="cart-item-price">${(parseFloat(i.price)*i.quantity).toFixed(0)} kr</div>
+      <button class="btn btn-sm btn-outline" onclick="removeFromCart(${i.book_id})" style="margin-left:0.5rem;">Remove</button>
     </div>`).join('');
 
   const totalBooks = cartData.items.reduce((s,i)=>s+i.quantity,0);
-  const freeShipping = totalBooks >= 3;
+  const freeShipping = parseFloat(cartData.shippingFee) === 0;
   el.innerHTML = itemsHTML + `
     <div class="cart-summary">
       <div class="summary-row"><span>Subtotal</span><span class="summary-total">${parseFloat(cartData.subtotal).toFixed(2)} kr</span></div>
-      <div class="summary-row"><span>Shipping</span><span class="summary-total">${freeShipping || cartData.shippingFee===0 ? 'Free 🎉' : cartData.shippingFee+' kr'}</span></div>
+      <div class="summary-row"><span>Shipping</span><span class="summary-total">${freeShipping ? 'Free 🎉' : cartData.shippingFee+' kr'}</span></div>
       ${freeShipping ? '<p class="free-shipping-note">✓ Free shipping unlocked (3+ books)</p>' : `<p class="shipping-note">Order 3+ books for free shipping</p>`}
       <div class="summary-row" style="margin-top:0.5rem"><strong>Total</strong><strong class="summary-total" style="color:var(--red)">${parseFloat(cartData.total).toFixed(2)} kr</strong></div>
     </div>
@@ -816,7 +817,19 @@ async function loadCartPage() {
 
 async function updateQty(bookId, qty) {
   try {
+    if (qty <= 0) {
+      await removeFromCart(bookId);
+      return;
+    }
     await api('PUT', `/cart/${bookId}`, { quantity: qty });
+    loadCartPage();
+  } catch(e) { toast(e.message, 'error'); }
+}
+
+async function removeFromCart(bookId) {
+  try {
+    await api('DELETE', `/cart/${bookId}`);
+    toast('Removed from cart', 'success');
     loadCartPage();
   } catch(e) { toast(e.message, 'error'); }
 }
@@ -856,7 +869,11 @@ async function initiatePayment() {
       const addr = await api('POST', '/auth/address', addressData).catch(()=>null);
       address_id = addr?.address_id;
     }
-    const order = await api('POST', '/orders', { delivery_method: deliveryMethod, address_id });
+    const orderData = { delivery_method: deliveryMethod, address_id };
+    if (addressData) {
+      orderData.postal_code = addressData.postal_code;
+    }
+    const order = await api('POST', '/orders', orderData);
     // Then initiate MobilePay
     const payment = await api('POST', '/payments/mobilepay/initiate', { order_id: order.order_id });
     if (payment.redirectUrl) {

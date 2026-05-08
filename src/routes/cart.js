@@ -23,9 +23,16 @@ router.get('/', async (req, res) => {
     const subtotal = items.reduce((sum, i) => sum + parseFloat(i.price) * i.quantity, 0);
     const bookCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
+    // For cart display, calculate basic shipping (will be recalculated at checkout with postal code)
+    // Free shipping for 3+ books, otherwise assume standard shipping of 40 DKK
+    const shippingFee = bookCount >= 3 ? 0 : 40;
+    const total = subtotal + shippingFee;
+
     res.json({
       items,
       subtotal: subtotal.toFixed(2),
+      shippingFee: shippingFee.toFixed(2),
+      total: total.toFixed(2),
       bookCount
     });
   } catch (err) {
