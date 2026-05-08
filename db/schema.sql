@@ -178,21 +178,21 @@ CREATE INDEX IF NOT EXISTS idx_cart_user       ON public.cart_items(user_id);
 INSERT INTO public.genres (name) VALUES
   ('Fiction'), ('Non-Fiction'), ('Mystery & Thriller'), ('Science Fiction'),
   ('Fantasy'), ('Romance'), ('Biography'), ('History'), ('Philosophy'),
-  ('Science'), ('Poetry'), ('Travel'), ('Self-Help'), ("Children's"), ('Comics & Graphic Novels')
+  ('Science'), ('Poetry'), ('Travel'), ('Self-Help'), ('Children''s'), ('Comics & Graphic Novels')
 ON CONFLICT DO NOTHING;
 
 -- ─────────────────────────────────────────────
 -- SEED: Badge Definitions  (mirrors achievement seeds in DMS_db_schema.sql)
 -- ─────────────────────────────────────────────
 INSERT INTO public.badge_definitions (name, description, icon, trigger_type, threshold) VALUES
-  ('First Page',       'Placed your first order',                '📖', 'orders_count', 1),
-  ('Bookworm',         'Ordered 5 or more books',                '🐛', 'orders_count', 5),
-  ('Chapter Collector','Ordered 10 or more books',               '📚', 'orders_count', 10),
-  ('Library Builder',  'Ordered 25 or more books',               '🏛️', 'orders_count', 25),
-  ('Penny Reader',     'Spent 100 DKK or more',                  '💰', 'spend_total',  100),
-  ('Big Spender',      'Spent 500 DKK or more',                  '🤑', 'spend_total',  500),
-  ('Genre Explorer',   'Bought books from 5 different genres',   '🗺️', 'genre_count',  5),
-  ('Omnivore',         'Bought books from 10 different genres',  '🦁', 'genre_count',  10)
+  ('First Page',       'Placed your first order',                'book', 'orders_count', 1),
+  ('Bookworm',         'Ordered 5 or more books',                'worm', 'orders_count', 5),
+  ('Chapter Collector','Ordered 10 or more books',               'books', 'orders_count', 10),
+  ('Library Builder',  'Ordered 25 or more books',               'library', 'orders_count', 25),
+  ('Penny Reader',     'Spent 100 DKK or more',                  'coin', 'spend_total',  100),
+  ('Big Spender',      'Spent 500 DKK or more',                  'money', 'spend_total',  500),
+  ('Genre Explorer',   'Bought books from 5 different genres',   'map', 'genre_count',  5),
+  ('Omnivore',         'Bought books from 10 different genres',  'lion', 'genre_count',  10)
 ON CONFLICT DO NOTHING;
 
 -- ─────────────────────────────────────────────
