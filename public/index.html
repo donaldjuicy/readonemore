@@ -139,8 +139,6 @@
     .summary-row { display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.95rem; border-bottom:1px solid var(--rule); }
     .summary-row:last-child { border:none; }
     .summary-total { font-family:'DM Mono',monospace; font-size:1.15rem; font-weight:500; }
-    .free-shipping-note { font-size:0.82rem; color:#2e7d32; font-style:italic; margin-top:0.3rem; }
-    .shipping-note { font-size:0.82rem; color:var(--mid); font-style:italic; margin-top:0.3rem; }
 
     /* ── CHECKOUT ── */
     .checkout-wrap { max-width:700px; margin:0 auto; padding:2.5rem 2rem; }
@@ -159,23 +157,6 @@
     .delivery-toggle { display:flex; gap:0; border:1.5px solid var(--rule); border-radius:2px; overflow:hidden; margin-bottom:1rem; }
     .delivery-opt { flex:1; padding:0.7rem; text-align:center; cursor:pointer; font-size:0.9rem; transition:all .2s; border:none; background:transparent; font-family:'Crimson Pro',serif; }
     .delivery-opt.active { background:var(--red); color:#fff; }
-    .mobilepay-btn { width:100%; background:#5a78ff; color:#fff; border:none; border-radius:6px; padding:1rem; font-size:1.1rem; font-weight:700; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:0.7rem; font-family:'Crimson Pro',serif; letter-spacing:0.04em; transition:background .2s; }
-    .mobilepay-btn:hover { background:#4060ee; }
-    .mobilepay-logo { font-family:'DM Mono',monospace; font-size:1.2rem; font-weight:700; }
-
-    /* ── BADGES ── */
-    .badges-wrap { max-width:900px; margin:0 auto; padding:2.5rem 2rem; }
-    .badges-wrap h2 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.5rem; }
-    .badges-sub { color:var(--mid); font-style:italic; margin-bottom:2rem; }
-    .badges-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(200px,1fr)); gap:1.2rem; }
-    .badge-card { background:var(--white); border:1px solid var(--rule); border-radius:4px; padding:1.5rem; text-align:center; transition:transform .2s, box-shadow .2s; }
-    .badge-card.earned { border-color:var(--red); box-shadow:0 2px 14px var(--shadow); }
-    .badge-card:hover { transform:translateY(-2px); }
-    .badge-icon { font-size:2.8rem; margin-bottom:0.6rem; }
-    .badge-name { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; margin-bottom:0.3rem; }
-    .badge-desc { font-size:0.82rem; color:var(--mid); margin-bottom:0.5rem; }
-    .badge-earned-label { font-size:0.72rem; font-family:'DM Mono',monospace; color:#2e7d32; background:#e8f5e9; padding:0.2rem 0.6rem; border-radius:20px; }
-    .badge-locked { font-size:0.72rem; font-family:'DM Mono',monospace; color:var(--light); }
 
     /* ── ADMIN ── */
     .admin-wrap { max-width:1200px; margin:0 auto; padding:2.5rem 2rem; }
@@ -203,6 +184,11 @@
     .auth-sub { color:var(--mid); font-style:italic; margin-bottom:1.5rem; font-size:0.95rem; }
     .auth-toggle { text-align:center; margin-top:1.2rem; font-size:0.9rem; color:var(--mid); }
     .auth-toggle a { color:var(--red); cursor:pointer; }
+
+    /* ── WISHLIST WRAP (was badges-wrap) ── */
+    .wishlist-wrap { max-width:900px; margin:0 auto; padding:2.5rem 2rem; }
+    .wishlist-wrap h2 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.5rem; }
+    .wishlist-sub { color:var(--mid); font-style:italic; margin-bottom:2rem; }
 
     /* ── TOAST ── */
     .toast { position:fixed; bottom:2rem; right:2rem; background:var(--ink); color:#fff; padding:0.9rem 1.5rem; border-radius:4px; font-size:0.92rem; z-index:9000; animation:slideUp .3s ease; display:none; max-width:320px; }
@@ -244,9 +230,8 @@
   <ul class="nav-links">
     <li><a onclick="showPage('shop')" data-page="shop">Shop</a></li>
     <li><a onclick="showPage('wishlist')" data-page="wishlist">Wishlist</a></li>
-    <li><a onclick="showPage('badges')" data-page="badges">Badges</a></li>
     <li id="admin-nav" style="display:none"><a onclick="showPage('admin')" data-page="admin">Admin</a></li>
-    <li id="auth-nav-login" ><a onclick="showPage('auth')">Login</a></li>
+    <li id="auth-nav-login"><a onclick="showPage('auth')">Login</a></li>
     <li id="auth-nav-logout" style="display:none"><a onclick="logout()">Logout</a></li>
   </ul>
   <div class="nav-right">
@@ -332,7 +317,7 @@
         <div class="form-group"><label>Address</label><input type="text" id="sh-line1" placeholder="Strøget 12, 2. sal"></div>
         <div class="form-row">
           <div class="form-group"><label>City</label><input type="text" id="sh-city" placeholder="Copenhagen"></div>
-          <div class="form-group"><label>Postal code</label><input type="text" id="sh-postal" placeholder="1000"></div>
+          <div class="form-group"><label>Postal code</label><input type="text" id="sh-postal" placeholder="1000" oninput="loadCheckoutSummary()"></div>
         </div>
       </div>
       <div id="pickup-info" style="display:none;background:var(--cream);border-left:3px solid var(--red);padding:1rem;font-style:italic;font-size:0.95rem;color:var(--mid)">
@@ -345,29 +330,26 @@
     </div>
     <div class="form-section">
       <h3>Payment</h3>
-      <p style="color:var(--mid);font-size:0.9rem;margin-bottom:1rem;font-style:italic">Pay securely with MobilePay</p>
-      <button class="mobilepay-btn" onclick="initiatePayment()">
-        <span class="mobilepay-logo">MobilePay</span> — Pay now
-      </button>
+      <p style="color:var(--mid);font-size:0.9rem;margin-bottom:1rem;font-style:italic">Complete your order and pay manually via MobilePay</p>
+      <button class="btn btn-primary" style="width:100%" onclick="placeOrder()">Place order</button>
+    </div>
+    <div id="payment-instructions" style="display:none;margin-top:2rem;padding:1.5rem;background:var(--cream);border-radius:4px;text-align:center">
+      <h3 style="color:var(--red);margin-bottom:1rem">Order Placed! 🎉</h3>
+      <p style="font-size:1.1rem;margin-bottom:1rem"><strong>Order #<span id="order-id-display"></span> placed.</strong></p>
+      <p style="margin-bottom:1rem">Send <strong><span id="order-total-display"></span> DKK</strong> via MobilePay to <strong>+45 91 68 81 30</strong></p>
+      <p style="margin-bottom:1rem">Include <strong>order #<span id="order-id-display-2"></span></strong> in the message</p>
+      <p style="color:var(--mid);font-size:0.9rem;margin-bottom:1.5rem">We will mark your order as paid within 24 hours</p>
+      <button class="btn btn-outline" onclick="showPage('shop')">Done — back to shop</button>
     </div>
   </div>
 </div>
 
 <!-- ══════════════════════════════════════════════════════ WISHLIST PAGE -->
 <div class="page" id="page-wishlist">
-  <div class="badges-wrap">
+  <div class="wishlist-wrap">
     <h2>Wishlist</h2>
-    <p class="badges-sub">Books you want to read — we'll keep them here for you.</p>
+    <p class="wishlist-sub">Books you want to read — we'll keep them here for you.</p>
     <div class="book-grid" id="wishlist-grid"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════ BADGES PAGE -->
-<div class="page" id="page-badges">
-  <div class="badges-wrap">
-    <h2>Reading Badges</h2>
-    <p class="badges-sub">Earn badges as you build your library.</p>
-    <div class="badges-grid" id="badges-grid"></div>
   </div>
 </div>
 
@@ -384,7 +366,7 @@
     </div>
     <div id="register-form" style="display:none">
       <h2>Join ReadOneMore</h2>
-      <p class="auth-sub">Create an account to save wishlists, earn badges, and check out.</p>
+      <p class="auth-sub">Create an account to save wishlists and check out.</p>
       <div class="form-group"><label>Full name</label><input type="text" id="reg-name" placeholder="Karen Hansen"></div>
       <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
       <div class="form-group"><label>Phone (optional)</label><input type="text" id="reg-phone" placeholder="+45 12 34 56 78"></div>
@@ -501,7 +483,7 @@ let currentUser = JSON.parse(localStorage.getItem('rom_user') || 'null');
 let currentPage = 1;
 let currentGenre = null;
 let currentBook = null;
-let cartData = { items: [], subtotal: 0, shippingFee: 0, total: 0 };
+let cartData = { items: [], subtotal: '0.00', bookCount: 0 };
 let deliveryMethod = 'shipping';
 let searchTimer = null;
 
@@ -531,6 +513,24 @@ async function api(method, path, body) {
 }
 
 // ══════════════════════════════════════════════════════════════
+// SHIPPING ZONES (mirror of src/services/shipping.js)
+// ══════════════════════════════════════════════════════════════
+function computeShipping(postalCode) {
+  if (!postalCode) return 90;
+  const code = String(postalCode).trim();
+  if (['2100', '2900'].includes(code)) return 0;
+  const num = parseInt(code, 10);
+  if (isNaN(num)) return 90;
+  if (num >= 3700 && num <= 3799) return 90;
+  if (num >= 1000 && num <= 2999) return 20;
+  if (num >= 3000 && num <= 3699) return 40;
+  if (num >= 4000 && num <= 4999) return 60;
+  if (num >= 5000 && num <= 5999) return 80;
+  if (num >= 6000 && num <= 9999) return 90;
+  return 90;
+}
+
+// ══════════════════════════════════════════════════════════════
 // NAVIGATION
 // ══════════════════════════════════════════════════════════════
 function showPage(name) {
@@ -539,9 +539,19 @@ function showPage(name) {
   document.querySelectorAll('.nav-links a[data-page]').forEach(a =>
     a.classList.toggle('active', a.dataset.page === name)
   );
+
+  // Reset checkout view if leaving it (so old "Order Placed!" doesn't linger)
+  if (name !== 'checkout') {
+    const wrap = document.querySelector('.checkout-wrap');
+    if (wrap) {
+      wrap.querySelectorAll(':scope > h2, :scope > .form-section').forEach(el => el.style.display = '');
+      const inst = document.getElementById('payment-instructions');
+      if (inst) inst.style.display = 'none';
+    }
+  }
+
   if (name === 'cart')     loadCartPage();
   if (name === 'checkout') loadCheckoutSummary();
-  if (name === 'badges')   loadBadges();
   if (name === 'wishlist') loadWishlist();
   if (name === 'admin')    { loadInventory(); loadAdminOrders(); loadStats(); }
 }
@@ -630,7 +640,6 @@ async function loadGenres() {
       pill.onclick = () => filterGenre(g.name, pill);
       wrap.appendChild(pill);
     });
-    // also populate admin genre select
     const sel = document.getElementById('f-genre');
     genres.forEach(g => {
       const o = document.createElement('option');
@@ -800,14 +809,10 @@ async function loadCartPage() {
       <button class="btn btn-sm btn-outline" onclick="removeFromCart(${i.book_id})" style="margin-left:0.5rem;">Remove</button>
     </div>`).join('');
 
-  const totalBooks = cartData.items.reduce((s,i)=>s+i.quantity,0);
-  const freeShipping = parseFloat(cartData.shippingFee) === 0;
   el.innerHTML = itemsHTML + `
     <div class="cart-summary">
       <div class="summary-row"><span>Subtotal</span><span class="summary-total">${parseFloat(cartData.subtotal).toFixed(2)} kr</span></div>
-      <div class="summary-row"><span>Shipping</span><span class="summary-total">${freeShipping ? 'Free 🎉' : cartData.shippingFee+' kr'}</span></div>
-      ${freeShipping ? '<p class="free-shipping-note">✓ Free shipping unlocked (3+ books)</p>' : `<p class="shipping-note">Order 3+ books for free shipping</p>`}
-      <div class="summary-row" style="margin-top:0.5rem"><strong>Total</strong><strong class="summary-total" style="color:var(--red)">${parseFloat(cartData.total).toFixed(2)} kr</strong></div>
+      <div class="summary-row" style="font-size:0.85rem;color:var(--mid)"><span>Shipping</span><span>Calculated at checkout</span></div>
     </div>
     <div style="margin-top:1.5rem;display:flex;gap:1rem">
       <button class="btn btn-primary" onclick="showPage('checkout')">Proceed to Checkout →</button>
@@ -821,7 +826,7 @@ async function updateQty(bookId, qty) {
       await removeFromCart(bookId);
       return;
     }
-    await api('PUT', `/cart/${bookId}`, { quantity: qty });
+    await api('PATCH', `/cart/${bookId}`, { quantity: qty });
     loadCartPage();
   } catch(e) { toast(e.message, 'error'); }
 }
@@ -831,6 +836,7 @@ async function removeFromCart(bookId) {
     await api('DELETE', `/cart/${bookId}`);
     toast('Removed from cart', 'success');
     loadCartPage();
+    loadCart(); // refresh nav cart count too
   } catch(e) { toast(e.message, 'error'); }
 }
 
@@ -839,24 +845,49 @@ async function removeFromCart(bookId) {
 // ══════════════════════════════════════════════════════════════
 function setDelivery(method) {
   deliveryMethod = method;
-  document.getElementById('opt-shipping').classList.toggle('active', method==='shipping');
-  document.getElementById('opt-pickup').classList.toggle('active', method==='pickup');
-  document.getElementById('shipping-fields').style.display = method==='shipping' ? '' : 'none';
-  document.getElementById('pickup-info').style.display     = method==='pickup'   ? '' : 'none';
+  document.getElementById('opt-shipping').classList.toggle('active', method === 'shipping');
+  document.getElementById('opt-pickup').classList.toggle('active', method === 'pickup');
+  document.getElementById('shipping-fields').style.display = method === 'shipping' ? '' : 'none';
+  document.getElementById('pickup-info').style.display     = method === 'pickup'   ? '' : 'none';
+  loadCheckoutSummary();
 }
 
 function loadCheckoutSummary() {
   const el = document.getElementById('checkout-summary');
-  if (!cartData.items.length) { el.innerHTML = '<p style="color:var(--mid);font-style:italic">Your cart is empty.</p>'; return; }
-  el.innerHTML = cartData.items.map(i=>`<div class="summary-row"><span>${esc(i.title)} ×${i.quantity}</span><span>${(parseFloat(i.price)*i.quantity).toFixed(2)} kr</span></div>`).join('') +
-    `<div class="summary-row"><span>Shipping</span><span>${cartData.shippingFee===0?'Free':cartData.shippingFee+' kr'}</span></div>
-     <div class="summary-row" style="border-top:2px solid var(--red);margin-top:0.5rem;padding-top:0.5rem"><strong>Total</strong><strong style="color:var(--red)">${parseFloat(cartData.total).toFixed(2)} kr</strong></div>`;
+  if (!cartData.items.length) {
+    el.innerHTML = '<p style="color:var(--mid);font-style:italic">Your cart is empty.</p>';
+    return;
+  }
+
+  const subtotal = parseFloat(cartData.subtotal);
+
+  let shippingFee = 0;
+  let shippingLabel = 'Free (pickup)';
+  if (deliveryMethod === 'shipping') {
+    const postal = (document.getElementById('sh-postal')?.value || '').trim();
+    if (!postal) {
+      shippingLabel = 'Enter postal code';
+      shippingFee = 0;
+    } else {
+      shippingFee = computeShipping(postal);
+      shippingLabel = shippingFee === 0 ? 'Free' : `${shippingFee} kr`;
+    }
+  }
+  const total = subtotal + shippingFee;
+
+  el.innerHTML = cartData.items.map(i =>
+    `<div class="summary-row"><span>${esc(i.title)} ×${i.quantity}</span><span>${(parseFloat(i.price)*i.quantity).toFixed(2)} kr</span></div>`
+  ).join('') +
+    `<div class="summary-row"><span>Shipping</span><span>${shippingLabel}</span></div>
+     <div class="summary-row" style="border-top:2px solid var(--red);margin-top:0.5rem;padding-top:0.5rem">
+       <strong>Total</strong>
+       <strong style="color:var(--red)">${total.toFixed(2)} kr</strong>
+     </div>`;
 }
 
-async function initiatePayment() {
+async function placeOrder() {
   if (!token) { toast('Please log in first', 'error'); return; }
   try {
-    // Create order first
     const addressData = deliveryMethod === 'shipping' ? {
       full_name: document.getElementById('sh-name').value,
       line1: document.getElementById('sh-line1').value,
@@ -864,25 +895,32 @@ async function initiatePayment() {
       postal_code: document.getElementById('sh-postal').value,
       country: 'Denmark'
     } : null;
+
     let address_id = null;
     if (addressData) {
-      const addr = await api('POST', '/auth/address', addressData).catch(()=>null);
+      const addr = await api('POST', '/auth/address', addressData).catch(() => null);
       address_id = addr?.address_id;
     }
+
     const orderData = { delivery_method: deliveryMethod, address_id };
-    if (addressData) {
-      orderData.postal_code = addressData.postal_code;
-    }
+    if (addressData) orderData.postal_code = addressData.postal_code;
+
     const order = await api('POST', '/orders', orderData);
-    // Then initiate MobilePay
-    const payment = await api('POST', '/payments/mobilepay/initiate', { order_id: order.order_id });
-    if (payment.redirectUrl) {
-      window.location.href = payment.redirectUrl;
-    } else {
-      toast('Payment initiated! Check MobilePay.', 'success');
-      showPage('shop');
-    }
-  } catch(e) { toast(e.message, 'error'); }
+
+    document.getElementById('order-id-display').textContent    = order.order_id;
+    document.getElementById('order-id-display-2').textContent  = order.order_id;
+    document.getElementById('order-total-display').textContent = parseFloat(order.total).toFixed(2);
+
+    // Hide form sections individually so the instructions stay visible
+    const wrap = document.querySelector('.checkout-wrap');
+    wrap.querySelectorAll(':scope > h2, :scope > .form-section').forEach(el => el.style.display = 'none');
+    document.getElementById('payment-instructions').style.display = 'block';
+
+    toast('Order placed successfully!', 'success');
+    loadCart();
+  } catch(e) {
+    toast(e.message, 'error');
+  }
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -896,36 +934,12 @@ async function loadWishlist() {
   try {
     const items = await api('GET', '/wishlist');
     const grid = document.getElementById('wishlist-grid');
-    if (!items.length) { grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">♡</div><h3>Your wishlist is empty</h3><p>Browse the shop and save books you love.</p></div>`; return; }
+    if (!items.length) {
+      grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">♡</div><h3>Your wishlist is empty</h3><p>Browse the shop and save books you love.</p></div>`;
+      return;
+    }
     grid.innerHTML = '';
-    items.forEach(b => {
-      const card = bookCard(b);
-      grid.appendChild(card);
-    });
-  } catch(e) {}
-}
-
-// ══════════════════════════════════════════════════════════════
-// BADGES
-// ══════════════════════════════════════════════════════════════
-async function loadBadges() {
-  try {
-    const badges = token ? await api('GET', '/badges/my') : await api('GET', '/badges');
-    const grid = document.getElementById('badges-grid');
-    grid.innerHTML = '';
-    badges.forEach(b => {
-      const earned = !!b.unlocked_at;
-      const card = document.createElement('div');
-      card.className = 'badge-card' + (earned ? ' earned' : '');
-      card.innerHTML = `
-        <div class="badge-icon">${b.icon}</div>
-        <div class="badge-name">${esc(b.name)}</div>
-        <div class="badge-desc">${esc(b.description)}</div>
-        ${earned
-          ? `<span class="badge-earned-label">✓ Earned ${new Date(b.unlocked_at).toLocaleDateString('da-DK')}</span>`
-          : `<span class="badge-locked">Locked</span>`}`;
-      grid.appendChild(card);
-    });
+    items.forEach(b => grid.appendChild(bookCard(b)));
   } catch(e) {}
 }
 
@@ -1083,4 +1097,4 @@ function esc(str) {
 }
 </script>
 </body>
-</html> 
+</html>

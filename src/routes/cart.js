@@ -6,6 +6,8 @@ const { authenticate } = require('../middleware/auth');
 router.use(authenticate);
 
 // GET /api/cart — get current user's cart
+// No shipping fee here; real shipping is calculated at checkout
+// once we know the postal code or pickup option.
 router.get('/', async (req, res) => {
   try {
     const result = await db.query(
@@ -23,16 +25,9 @@ router.get('/', async (req, res) => {
     const subtotal = items.reduce((sum, i) => sum + parseFloat(i.price) * i.quantity, 0);
     const bookCount = items.reduce((sum, i) => sum + i.quantity, 0);
 
-    // For cart display, calculate basic shipping (will be recalculated at checkout with postal code)
-    // Free shipping for 3+ books, otherwise assume standard shipping of 40 DKK
-    const shippingFee = bookCount >= 3 ? 0 : 40;
-    const total = subtotal + shippingFee;
-
     res.json({
       items,
       subtotal: subtotal.toFixed(2),
-      shippingFee: shippingFee.toFixed(2),
-      total: total.toFixed(2),
       bookCount
     });
   } catch (err) {
@@ -47,7 +42,6 @@ router.post('/', async (req, res) => {
     if (!book_id) return res.status(400).json({ error: 'book_id required' });
     if (quantity < 1) return res.status(400).json({ error: 'quantity must be at least 1' });
 
-    // Check book exists and is available
     const bookResult = await db.query(
       `SELECT book_id, title, stock, status FROM books WHERE book_id=$1`,
       [book_id]
@@ -61,7 +55,6 @@ router.post('/', async (req, res) => {
       return res.status(409).json({ error: `Only ${book.stock} in stock` });
     }
 
-    // Upsert into cart_items (UNIQUE on user_id, book_id)
     const result = await db.query(
       `INSERT INTO cart_items (user_id, book_id, quantity)
        VALUES ($1, $2, $3)
@@ -71,7 +64,6 @@ router.post('/', async (req, res) => {
       [req.user.userId, book_id, quantity]
     );
 
-    // Make sure we don't exceed stock after merge
     const merged = result.rows[0];
     if (merged.quantity > book.stock) {
       await db.query(
