@@ -4,6 +4,88 @@ const { authenticate, requireAdmin } = require('../middleware/auth');
 const { calculateShipping } = require('../services/shipping');
 
 // ─────────────────────────────────────────────────────────────
+// POST /api/orders/guest — create guest order
+// ─────────────────────────────────────────────────────────────
+router.post('/guest', async (req, res) => {
+  console.log('Guest order route hit with body:', req.body);
+  const client = await db.pool.connect();
+  try {
+    const { delivery_method, name, phone, line1, city, postal_code, items } = req.body;
+    if (!items || !items.length) return res.status(400).json({ error: 'No items' });
+
+    // 1. Load books for stock check
+    const bookIds = items.map(i => i.book_id);
+    const booksResult = await client.query(
+      `SELECT book_id, price, stock, title FROM books WHERE book_id = ANY($1)`,
+      [bookIds]
+    );
+    const books = booksResult.rows;
+
+    // 2. Stock check
+    for (const item of items) {
+      const book = books.find(b => b.book_id === item.book_id);
+      if (!book) return res.status(404).json({ error: 'Book not found' });
+      if (book.stock < item.quantity) {
+        return res.status(409).json({ error: `"${book.title}" only has ${book.stock} in stock` });
+      }
+    }
+
+    await client.query('BEGIN');
+
+    // 3. Totals
+    const subtotal = items.reduce((s, i) => {
+      const book = books.find(b => b.book_id === i.book_id);
+      return s + parseFloat(book.price) * i.quantity;
+    }, 0);
+    const shippingFee = delivery_method === 'pickup' ? 0 : calculateShipping(postal_code);
+    const total = subtotal + shippingFee;
+
+    // 4. Create order with user_id = NULL
+    const orderResult = await client.query(
+      `INSERT INTO orders
+        (user_id, delivery_method, address_id, subtotal, shipping_fee, total, notes)
+       VALUES (NULL, $1, NULL, $2, $3, $4, $5)
+       RETURNING *`,
+      [
+        delivery_method || 'shipping',
+        subtotal.toFixed(2),
+        shippingFee.toFixed(2),
+        total.toFixed(2),
+        name ? `Guest: ${name} (${phone || ''}) ${line1 || ''} ${city || ''} ${postal_code || ''}` : 'Guest order'
+      ]
+    );
+    const order = orderResult.rows[0];
+
+    // 5. Insert order items + decrement stock
+    for (const item of items) {
+      const book = books.find(b => b.book_id === item.book_id);
+      await client.query(
+        `INSERT INTO order_items (order_id, book_id, quantity, unit_price)
+         VALUES ($1, $2, $3, $4)`,
+        [order.order_id, item.book_id, item.quantity, book.price]
+      );
+      await client.query(
+        `UPDATE books
+         SET stock = stock - $1,
+             status = CASE WHEN stock - $1 <= 0 THEN 'sold' ELSE status END,
+             updated_at = now()
+         WHERE book_id = $2`,
+        [item.quantity, item.book_id]
+      );
+    }
+
+    await client.query('COMMIT');
+    res.status(201).json(order);
+  } catch (err) {
+    await client.query('ROLLBACK');
+    console.error('Guest order creation failed:', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    client.release();
+  }
+});
+
+// ─────────────────────────────────────────────────────────────
 // POST /api/orders  — create order from cart
 // ─────────────────────────────────────────────────────────────
 router.post('/', authenticate, async (req, res) => {
@@ -103,7 +185,7 @@ router.get('/', authenticate, async (req, res) => {
       SELECT o.*, u.full_name, u.email,
              COUNT(oi.item_id) AS item_count
       FROM orders o
-      JOIN users u ON o.user_id = u.user_id
+      LEFT JOIN users u ON o.user_id = u.user_id
       LEFT JOIN order_items oi ON o.order_id = oi.order_id
       ${where}
       GROUP BY o.order_id, u.full_name, u.email
@@ -125,7 +207,7 @@ router.get('/:id', authenticate, async (req, res) => {
     const orderResult = await db.query(
       `SELECT o.*, u.full_name, u.email, a.line1, a.line2, a.city, a.postal_code
        FROM orders o
-       JOIN users u ON o.user_id = u.user_id
+       LEFT JOIN users u ON o.user_id = u.user_id
        LEFT JOIN addresses a ON o.address_id = a.address_id
        WHERE o.order_id = $1 AND ($2 OR o.user_id = $3)`,
       [req.params.id, req.user.role === 'admin', req.user.userId]

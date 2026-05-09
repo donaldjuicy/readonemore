@@ -130,10 +130,6 @@
     .cart-item-cover img { width:100%; height:100%; object-fit:cover; }
     .cart-item-title { font-family:'Playfair Display',serif; font-size:1rem; font-weight:700; }
     .cart-item-author { font-size:0.85rem; color:var(--mid); }
-    .qty-control { display:flex; align-items:center; gap:0.5rem; }
-    .qty-btn { background:var(--cream); border:1px solid var(--rule); width:28px; height:28px; border-radius:2px; cursor:pointer; font-size:1.1rem; display:flex; align-items:center; justify-content:center; transition:background .15s; }
-    .qty-btn:hover { background:var(--red); color:#fff; border-color:var(--red); }
-    .qty-val { font-family:'DM Mono',monospace; font-size:0.95rem; min-width:24px; text-align:center; }
     .cart-item-price { font-family:'DM Mono',monospace; font-size:1rem; color:var(--red); min-width:80px; text-align:right; }
     .cart-summary { margin-top:2rem; background:var(--white); border:1px solid var(--rule); padding:1.5rem; border-radius:4px; }
     .summary-row { display:flex; justify-content:space-between; padding:0.5rem 0; font-size:0.95rem; border-bottom:1px solid var(--rule); }
@@ -178,18 +174,6 @@
     .book-form h3 { font-family:'Playfair Display',serif; font-size:1.3rem; margin-bottom:1.5rem; }
     .form-3col { display:grid; grid-template-columns:1fr 1fr 1fr; gap:1rem; }
 
-    /* ── AUTH ── */
-    .auth-wrap { max-width:440px; margin:4rem auto; padding:2.5rem; background:var(--white); border:1px solid var(--rule); border-radius:4px; }
-    .auth-wrap h2 { font-family:'Playfair Display',serif; font-size:1.8rem; margin-bottom:0.3rem; }
-    .auth-sub { color:var(--mid); font-style:italic; margin-bottom:1.5rem; font-size:0.95rem; }
-    .auth-toggle { text-align:center; margin-top:1.2rem; font-size:0.9rem; color:var(--mid); }
-    .auth-toggle a { color:var(--red); cursor:pointer; }
-
-    /* ── WISHLIST WRAP (was badges-wrap) ── */
-    .wishlist-wrap { max-width:900px; margin:0 auto; padding:2.5rem 2rem; }
-    .wishlist-wrap h2 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.5rem; }
-    .wishlist-sub { color:var(--mid); font-style:italic; margin-bottom:2rem; }
-
     /* ── TOAST ── */
     .toast { position:fixed; bottom:2rem; right:2rem; background:var(--ink); color:#fff; padding:0.9rem 1.5rem; border-radius:4px; font-size:0.92rem; z-index:9000; animation:slideUp .3s ease; display:none; max-width:320px; }
     .toast.show { display:block; }
@@ -229,10 +213,7 @@
   </a>
   <ul class="nav-links">
     <li><a onclick="showPage('shop')" data-page="shop">Shop</a></li>
-    <li><a onclick="showPage('wishlist')" data-page="wishlist">Wishlist</a></li>
     <li id="admin-nav" style="display:none"><a onclick="showPage('admin')" data-page="admin">Admin</a></li>
-    <li id="auth-nav-login"><a onclick="showPage('auth')">Login</a></li>
-    <li id="auth-nav-logout" style="display:none"><a onclick="logout()">Logout</a></li>
   </ul>
   <div class="nav-right">
     <button class="cart-btn" onclick="showPage('cart')">
@@ -253,7 +234,6 @@
       <p class="hero-sub">Curated used books with a history — each one waiting for the right reader.</p>
       <div class="hero-ctas">
         <button class="btn btn-primary" onclick="document.getElementById('shop-grid-section').scrollIntoView({behavior:'smooth'})">Browse Books</button>
-        <button class="btn btn-outline" onclick="showPage('auth')">Create Account</button>
       </div>
     </div>
     <div class="hero-right">
@@ -344,39 +324,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════════════════ WISHLIST PAGE -->
-<div class="page" id="page-wishlist">
-  <div class="wishlist-wrap">
-    <h2>Wishlist</h2>
-    <p class="wishlist-sub">Books you want to read — we'll keep them here for you.</p>
-    <div class="book-grid" id="wishlist-grid"></div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════════════════ AUTH PAGE -->
-<div class="page" id="page-auth">
-  <div class="auth-wrap">
-    <div id="login-form">
-      <h2>Welcome back</h2>
-      <p class="auth-sub">Log in to your ReadOneMore account.</p>
-      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com"></div>
-      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="••••••••"></div>
-      <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="doLogin()">Log in</button>
-      <p class="auth-toggle">No account? <a onclick="toggleAuth()">Create one</a></p>
-    </div>
-    <div id="register-form" style="display:none">
-      <h2>Join ReadOneMore</h2>
-      <p class="auth-sub">Create an account to save wishlists and check out.</p>
-      <div class="form-group"><label>Full name</label><input type="text" id="reg-name" placeholder="Karen Hansen"></div>
-      <div class="form-group"><label>Email</label><input type="email" id="reg-email" placeholder="you@example.com"></div>
-      <div class="form-group"><label>Phone (optional)</label><input type="text" id="reg-phone" placeholder="+45 12 34 56 78"></div>
-      <div class="form-group"><label>Password</label><input type="password" id="reg-password" placeholder="min. 8 characters"></div>
-      <button class="btn btn-primary" style="width:100%;margin-top:0.5rem" onclick="doRegister()">Create account</button>
-      <p class="auth-toggle">Already have one? <a onclick="toggleAuth()">Log in</a></p>
-    </div>
-  </div>
-</div>
-
 <!-- ══════════════════════════════════════════════════════ ADMIN PAGE -->
 <div class="page" id="page-admin">
   <div class="admin-wrap">
@@ -462,7 +409,6 @@
       <div class="mood-tags" id="modal-moods"></div>
       <div class="modal-actions" style="margin-top:1.2rem">
         <button class="btn btn-primary" id="modal-add-cart-btn" onclick="addToCartFromModal()">Add to Cart</button>
-        <button class="btn btn-ghost" id="modal-wishlist-btn" onclick="toggleWishlistFromModal()">♡ Wishlist</button>
       </div>
     </div>
   </div>
@@ -478,33 +424,26 @@
 // STATE
 // ══════════════════════════════════════════════════════════════
 const API = '/api';
-let token = localStorage.getItem('rom_token');
-let currentUser = JSON.parse(localStorage.getItem('rom_user') || 'null');
 let currentPage = 1;
 let currentGenre = null;
 let currentBook = null;
-let cartData = { items: [], subtotal: '0.00', bookCount: 0 };
 let deliveryMethod = 'shipping';
 let searchTimer = null;
+const CART_KEY = 'rom_cart';
 
 // ══════════════════════════════════════════════════════════════
 // INIT
 // ══════════════════════════════════════════════════════════════
 document.addEventListener('DOMContentLoaded', () => {
-  updateNavForUser();
   loadGenres();
   loadBooks();
-  if (token) loadCart();
+  loadCart();
 });
-
-function authHeaders() {
-  return { 'Content-Type': 'application/json', ...(token ? { Authorization: `Bearer ${token}` } : {}) };
-}
 
 async function api(method, path, body) {
   const res = await fetch(API + path, {
     method,
-    headers: authHeaders(),
+    headers: { 'Content-Type': 'application/json' },
     body: body ? JSON.stringify(body) : undefined
   });
   const data = await res.json().catch(() => ({}));
@@ -513,7 +452,7 @@ async function api(method, path, body) {
 }
 
 // ══════════════════════════════════════════════════════════════
-// SHIPPING ZONES (mirror of src/services/shipping.js)
+// SHIPPING ZONES
 // ══════════════════════════════════════════════════════════════
 function computeShipping(postalCode) {
   if (!postalCode) return 90;
@@ -539,8 +478,6 @@ function showPage(name) {
   document.querySelectorAll('.nav-links a[data-page]').forEach(a =>
     a.classList.toggle('active', a.dataset.page === name)
   );
-
-  // Reset checkout view if leaving it (so old "Order Placed!" doesn't linger)
   if (name !== 'checkout') {
     const wrap = document.querySelector('.checkout-wrap');
     if (wrap) {
@@ -549,10 +486,8 @@ function showPage(name) {
       if (inst) inst.style.display = 'none';
     }
   }
-
   if (name === 'cart')     loadCartPage();
   if (name === 'checkout') loadCheckoutSummary();
-  if (name === 'wishlist') loadWishlist();
   if (name === 'admin')    { loadInventory(); loadAdminOrders(); loadStats(); }
 }
 
@@ -565,65 +500,6 @@ function toast(msg, type='') {
   el.className = `toast show ${type}`;
   clearTimeout(el._t);
   el._t = setTimeout(() => el.classList.remove('show'), 3500);
-}
-
-// ══════════════════════════════════════════════════════════════
-// AUTH
-// ══════════════════════════════════════════════════════════════
-function updateNavForUser() {
-  const loggedIn = !!token;
-  document.getElementById('auth-nav-login').style.display  = loggedIn ? 'none' : '';
-  document.getElementById('auth-nav-logout').style.display = loggedIn ? '' : 'none';
-  document.getElementById('admin-nav').style.display       = currentUser?.role === 'admin' ? '' : 'none';
-}
-
-function toggleAuth() {
-  document.getElementById('login-form').style.display    = document.getElementById('login-form').style.display === 'none' ? '' : 'none';
-  document.getElementById('register-form').style.display = document.getElementById('register-form').style.display === 'none' ? '' : 'none';
-}
-
-async function doLogin() {
-  try {
-    const data = await api('POST', '/auth/login', {
-      email: document.getElementById('login-email').value,
-      password: document.getElementById('login-password').value
-    });
-    setAuth(data.token, data.user);
-    toast('Welcome back, ' + data.user.full_name + '!', 'success');
-    showPage('shop');
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-async function doRegister() {
-  try {
-    const data = await api('POST', '/auth/register', {
-      email: document.getElementById('reg-email').value,
-      password: document.getElementById('reg-password').value,
-      full_name: document.getElementById('reg-name').value,
-      phone: document.getElementById('reg-phone').value
-    });
-    setAuth(data.token, data.user);
-    toast('Account created! Welcome to ReadOneMore 📖', 'success');
-    showPage('shop');
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-function setAuth(t, user) {
-  token = t; currentUser = user;
-  localStorage.setItem('rom_token', t);
-  localStorage.setItem('rom_user', JSON.stringify(user));
-  updateNavForUser();
-  loadCart();
-}
-
-function logout() {
-  token = null; currentUser = null;
-  localStorage.removeItem('rom_token');
-  localStorage.removeItem('rom_user');
-  updateNavForUser();
-  document.getElementById('cart-count').textContent = '0';
-  showPage('shop');
-  toast('Logged out.', '');
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -679,9 +555,7 @@ async function loadBooks(append = false) {
       grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:3rem;color:var(--mid);font-style:italic">No books found matching your search.</div>';
     }
     data.books.forEach(b => grid.appendChild(bookCard(b)));
-    const total = data.total;
-    const shown = currentPage * 24;
-    document.getElementById('load-more-wrap').hidden = shown >= total;
+    document.getElementById('load-more-wrap').hidden = (currentPage * 24) >= data.total;
   } catch(e) { console.error(e); }
 }
 
@@ -750,47 +624,46 @@ function closeModal(e) {
   if (e.target === document.getElementById('book-modal')) closeBookModal();
 }
 
-async function addToCartFromModal() {
-  if (!token) { toast('Please log in to add to cart', 'error'); showPage('auth'); return; }
-  try {
-    await api('POST', '/cart', { book_id: currentBook.book_id, quantity: 1 });
-    toast(`"${currentBook.title}" added to cart 🛒`, 'success');
-    loadCart();
+function addToCartFromModal() {
+  const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+  const existing = cart.find(i => i.book_id === currentBook.book_id);
+  if (existing) {
+    toast(`"${currentBook.title}" is already in your cart`, '');
     closeBookModal();
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-async function toggleWishlistFromModal() {
-  if (!token) { toast('Please log in', 'error'); return; }
-  try {
-    await api('POST', '/wishlist', { book_id: currentBook.book_id });
-    toast('Added to wishlist ♡', 'success');
-  } catch(e) { toast(e.message, 'error'); }
+    return;
+  }
+  cart.push({
+    book_id: currentBook.book_id,
+    title: currentBook.title,
+    author: currentBook.author,
+    price: currentBook.price,
+    cover_image_url: currentBook.cover_image_url,
+    condition: currentBook.condition,
+    quantity: 1
+  });
+  localStorage.setItem(CART_KEY, JSON.stringify(cart));
+  toast(`"${currentBook.title}" added to cart 🛒`, 'success');
+  loadCart();
+  closeBookModal();
 }
 
 // ══════════════════════════════════════════════════════════════
 // CART
 // ══════════════════════════════════════════════════════════════
-async function loadCart() {
-  if (!token) return;
-  try {
-    cartData = await api('GET', '/cart');
-    document.getElementById('cart-count').textContent = cartData.items.reduce((s,i)=>s+i.quantity,0);
-  } catch(e) {}
+function loadCart() {
+  const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+  document.getElementById('cart-count').textContent = cart.length;
 }
 
-async function loadCartPage() {
-  if (!token) {
-    document.getElementById('cart-content').innerHTML = `<div class="empty"><div class="empty-icon">🛒</div><h3>Log in to view your cart</h3><button class="btn btn-primary" onclick="showPage('auth')">Log in</button></div>`;
-    return;
-  }
-  await loadCart();
+function loadCartPage() {
+  const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
   const el = document.getElementById('cart-content');
-  if (!cartData.items.length) {
+  if (!cart.length) {
     el.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><h3>Your cart is empty</h3><p>Browse the shop and add something good.</p><button class="btn btn-primary" onclick="showPage('shop')">Browse Books</button></div>`;
     return;
   }
-  const itemsHTML = cartData.items.map(i => `
+  const subtotal = cart.reduce((s, i) => s + parseFloat(i.price), 0);
+  const itemsHTML = cart.map(i => `
     <div class="cart-item">
       <div class="cart-item-cover">
         ${i.cover_image_url ? `<img src="${i.cover_image_url}" alt="${esc(i.title)}">` : '📖'}
@@ -800,18 +673,13 @@ async function loadCartPage() {
         <div class="cart-item-author">${esc(i.author)}</div>
         <div style="font-size:0.8rem;color:var(--mid)">${{like_new:'Like new',good:'Good',fair:'Fair',worn:'Worn'}[i.condition]||i.condition}</div>
       </div>
-      <div class="qty-control">
-        <button class="qty-btn" onclick="updateQty(${i.book_id}, ${i.quantity-1})">−</button>
-        <span class="qty-val">${i.quantity}</span>
-        <button class="qty-btn" onclick="updateQty(${i.book_id}, ${i.quantity+1})">+</button>
-      </div>
-      <div class="cart-item-price">${(parseFloat(i.price)*i.quantity).toFixed(0)} kr</div>
-      <button class="btn btn-sm btn-outline" onclick="removeFromCart(${i.book_id})" style="margin-left:0.5rem;">Remove</button>
+      <div class="cart-item-price">${parseFloat(i.price).toFixed(0)} kr</div>
+      <button class="btn btn-sm btn-outline" onclick="removeFromCart(${i.book_id})">Remove</button>
     </div>`).join('');
 
   el.innerHTML = itemsHTML + `
     <div class="cart-summary">
-      <div class="summary-row"><span>Subtotal</span><span class="summary-total">${parseFloat(cartData.subtotal).toFixed(2)} kr</span></div>
+      <div class="summary-row"><span>Subtotal</span><span class="summary-total">${subtotal.toFixed(2)} kr</span></div>
       <div class="summary-row" style="font-size:0.85rem;color:var(--mid)"><span>Shipping</span><span>Calculated at checkout</span></div>
     </div>
     <div style="margin-top:1.5rem;display:flex;gap:1rem">
@@ -820,24 +688,12 @@ async function loadCartPage() {
     </div>`;
 }
 
-async function updateQty(bookId, qty) {
-  try {
-    if (qty <= 0) {
-      await removeFromCart(bookId);
-      return;
-    }
-    await api('PATCH', `/cart/${bookId}`, { quantity: qty });
-    loadCartPage();
-  } catch(e) { toast(e.message, 'error'); }
-}
-
-async function removeFromCart(bookId) {
-  try {
-    await api('DELETE', `/cart/${bookId}`);
-    toast('Removed from cart', 'success');
-    loadCartPage();
-    loadCart(); // refresh nav cart count too
-  } catch(e) { toast(e.message, 'error'); }
+function removeFromCart(bookId) {
+  const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+  localStorage.setItem(CART_KEY, JSON.stringify(cart.filter(i => i.book_id !== bookId)));
+  toast('Removed from cart', 'success');
+  loadCartPage();
+  loadCart();
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -853,30 +709,27 @@ function setDelivery(method) {
 }
 
 function loadCheckoutSummary() {
+  const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
   const el = document.getElementById('checkout-summary');
-  if (!cartData.items.length) {
+  if (!cart.length) {
     el.innerHTML = '<p style="color:var(--mid);font-style:italic">Your cart is empty.</p>';
     return;
   }
-
-  const subtotal = parseFloat(cartData.subtotal);
-
+  const subtotal = cart.reduce((s, i) => s + parseFloat(i.price), 0);
   let shippingFee = 0;
   let shippingLabel = 'Free (pickup)';
   if (deliveryMethod === 'shipping') {
     const postal = (document.getElementById('sh-postal')?.value || '').trim();
     if (!postal) {
       shippingLabel = 'Enter postal code';
-      shippingFee = 0;
     } else {
       shippingFee = computeShipping(postal);
       shippingLabel = shippingFee === 0 ? 'Free' : `${shippingFee} kr`;
     }
   }
   const total = subtotal + shippingFee;
-
-  el.innerHTML = cartData.items.map(i =>
-    `<div class="summary-row"><span>${esc(i.title)} ×${i.quantity}</span><span>${(parseFloat(i.price)*i.quantity).toFixed(2)} kr</span></div>`
+  el.innerHTML = cart.map(i =>
+    `<div class="summary-row"><span>${esc(i.title)}</span><span>${parseFloat(i.price).toFixed(2)} kr</span></div>`
   ).join('') +
     `<div class="summary-row"><span>Shipping</span><span>${shippingLabel}</span></div>
      <div class="summary-row" style="border-top:2px solid var(--red);margin-top:0.5rem;padding-top:0.5rem">
@@ -886,61 +739,44 @@ function loadCheckoutSummary() {
 }
 
 async function placeOrder() {
-  if (!token) { toast('Please log in first', 'error'); return; }
   try {
-    const addressData = deliveryMethod === 'shipping' ? {
-      full_name: document.getElementById('sh-name').value,
+    const cart = JSON.parse(localStorage.getItem(CART_KEY) || '[]');
+    if (!cart.length) { toast('Your cart is empty', 'error'); return; }
+
+    const body = {
+      delivery_method: deliveryMethod,
+      name: document.getElementById('sh-name').value,
+      phone: document.getElementById('sh-phone').value,
       line1: document.getElementById('sh-line1').value,
       city: document.getElementById('sh-city').value,
       postal_code: document.getElementById('sh-postal').value,
-      country: 'Denmark'
-    } : null;
+      items: cart.map(i => ({ book_id: i.book_id, quantity: i.quantity }))
+    };
 
-    let address_id = null;
-    if (addressData) {
-      const addr = await api('POST', '/auth/address', addressData).catch(() => null);
-      address_id = addr?.address_id;
-    }
+    const res = await fetch('/api/orders/guest', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
 
-    const orderData = { delivery_method: deliveryMethod, address_id };
-    if (addressData) orderData.postal_code = addressData.postal_code;
+    const order = await res.json();
+    if (!res.ok) { toast(order.error || 'Order failed', 'error'); return; }
 
-    const order = await api('POST', '/orders', orderData);
+    localStorage.removeItem(CART_KEY);
+    document.getElementById('cart-count').textContent = '0';
 
     document.getElementById('order-id-display').textContent    = order.order_id;
     document.getElementById('order-id-display-2').textContent  = order.order_id;
     document.getElementById('order-total-display').textContent = parseFloat(order.total).toFixed(2);
 
-    // Hide form sections individually so the instructions stay visible
     const wrap = document.querySelector('.checkout-wrap');
     wrap.querySelectorAll(':scope > h2, :scope > .form-section').forEach(el => el.style.display = 'none');
     document.getElementById('payment-instructions').style.display = 'block';
 
-    toast('Order placed successfully!', 'success');
-    loadCart();
+    toast('Order placed!', 'success');
   } catch(e) {
-    toast(e.message, 'error');
+    toast('Failed to place order: ' + e.message, 'error');
   }
-}
-
-// ══════════════════════════════════════════════════════════════
-// WISHLIST
-// ══════════════════════════════════════════════════════════════
-async function loadWishlist() {
-  if (!token) {
-    document.getElementById('wishlist-grid').innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">♡</div><h3>Log in to see your wishlist</h3><button class="btn btn-primary" onclick="showPage('auth')">Log in</button></div>`;
-    return;
-  }
-  try {
-    const items = await api('GET', '/wishlist');
-    const grid = document.getElementById('wishlist-grid');
-    if (!items.length) {
-      grid.innerHTML = `<div class="empty" style="grid-column:1/-1"><div class="empty-icon">♡</div><h3>Your wishlist is empty</h3><p>Browse the shop and save books you love.</p></div>`;
-      return;
-    }
-    grid.innerHTML = '';
-    items.forEach(b => grid.appendChild(bookCard(b)));
-  } catch(e) {}
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -981,7 +817,7 @@ async function loadAdminOrders() {
     tbody.innerHTML = orders.map(o => `
       <tr>
         <td style="font-family:'DM Mono',monospace">#${o.order_id}</td>
-        <td>${esc(o.full_name)}<br><small style="color:var(--mid)">${esc(o.email)}</small></td>
+        <td>${esc(o.full_name || 'Guest')}<br><small style="color:var(--mid)">${esc(o.email || '—')}</small></td>
         <td style="font-family:'DM Mono',monospace">${parseFloat(o.total).toFixed(2)} kr</td>
         <td>${o.delivery_method === 'pickup' ? '🏪 Pickup' : '📦 Shipping'}</td>
         <td><span style="font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:20px;background:var(--cream)">${o.status}</span></td>
@@ -1011,6 +847,7 @@ async function updateOrderStatus(orderId, status) {
 }
 
 async function downloadReport(orderId) {
+  const token = localStorage.getItem('rom_token');
   window.open(`${API}/reports/orders/${orderId}/pdf?token=${token}`, '_blank');
 }
 
