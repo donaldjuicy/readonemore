@@ -21,6 +21,10 @@ app.use('/api/payments', require('./routes/payments'));
 app.use('/api/reports',  require('./routes/reports'));
 
 // ── Page routes (SPA fallback) ─────────────────────────────────
+app.get('/admin/scan', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin/scan.html'));
+});
+
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
